@@ -20,12 +20,23 @@ fn setup(
     let mesh = meshes.add(Sphere::default().mesh().uv(12, 8));
     commands.spawn((
         PbrBundle  {
-            mesh,
+            mesh: mesh.clone(),
             material: materials.add(Color::BLACK),
             ..default()
         },
         Nim
-    ));
+    )).with_children(|parent| {
+        parent.spawn(
+            PbrBundle  {
+                mesh,
+                material: materials.add(Color::hsl(0.0, 0.5, 0.5)),
+                transform: Transform::from_xyz(0.0, 0.0, 1.5),
+                ..default()
+            }
+        );
+    });
+
+//meshes.add(Cylinder::default())
 }
 
 fn move_nim(mut query: Query<&mut Transform, With<Nim>>, time: Res<Time>) {
