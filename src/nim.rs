@@ -27,7 +27,7 @@ fn setup(
         Nim
     )).with_children(|parent| {
         parent.spawn(
-            PbrBundle  {
+            PbrBundle {
                 mesh,
                 material: materials.add(Color::hsl(0.0, 0.5, 0.5)),
                 transform: Transform::from_xyz(0.0, 0.0, 1.5),
@@ -36,7 +36,7 @@ fn setup(
         );
     });
 
-//meshes.add(Cylinder::default())
+    // meshes.add(Cylinder::default())
 }
 
 fn move_nim(mut query: Query<&mut Transform, With<Nim>>, time: Res<Time>) {

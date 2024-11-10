@@ -1,8 +1,9 @@
 use crate::terrain::TerrainPlugin;
 use crate::nim::NimPlugin;
 
-use bevy::prelude::*;
-use std::f32::consts::PI;
+use bevy::{prelude::*, render::mesh::skinning::SkinnedMesh};
+
+use std::f32::consts::*;
 
 use bevy_panorbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
 
@@ -14,10 +15,11 @@ impl Plugin for GamePlugin {
         app.add_plugins(NimPlugin);
         app.add_plugins(TerrainPlugin);
         app.add_systems(Startup, setup_scene);
+        app.add_systems(Update, joint_animation);
     }
 }
 
-fn setup_scene(mut commands: Commands) {
+fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Camera3dBundle {
             transform: Transform::from_xyz(0., 20., 75.)
@@ -41,4 +43,41 @@ fn setup_scene(mut commands: Commands) {
         ..default()
     });
 
+    /*let sc = asset_server
+        .load(GltfAssetLabel::Scene(0).from_asset("SimpleSkin.gltf"));
+    */
+    commands.spawn(SceneBundle {
+        scene: asset_server
+            .load(GltfAssetLabel::Scene(0).from_asset("SimpleSkin.gltf")),
+        ..default()
+    });
+
+
+    commands.spawn(SceneBundle {
+        scene: asset_server
+            .load(GltfAssetLabel::Scene(0).from_asset("arm.glb")),
+        ..default()
+    });
+
+}
+
+fn joint_animation(
+    time: Res<Time>,
+    parent_query: Query<&Parent, With<SkinnedMesh>>,
+    children_query: Query<&Children>,
+    mut transform_query: Query<&mut Transform>,
+) {
+    for skinned_mesh_parent in &parent_query {
+        let mesh_node_entity = skinned_mesh_parent.get();
+        let mesh_node_children = children_query.get(mesh_node_entity).unwrap();
+        let first_joint_entity = mesh_node_children[1];
+        let first_joint_children = children_query.get(first_joint_entity).unwrap();
+
+        // Second joint is the first child of the first joint.
+        let second_joint_entity = first_joint_children[0];
+        let mut second_joint_transform = transform_query.get_mut(second_joint_entity).unwrap();
+
+        second_joint_transform.rotation =
+            Quat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds().sin() * 5.0);
+    }
 }
