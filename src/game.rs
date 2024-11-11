@@ -55,7 +55,12 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn(SceneBundle {
         scene: asset_server
-            .load(GltfAssetLabel::Scene(0).from_asset("arm.glb")),
+            .load(GltfAssetLabel::Scene(0).from_asset("arm.gltf")),
+        transform: Transform {
+            translation: Vec3::new(0.0, 1.0, 0.0),
+            scale:Vec3::new( 30.0, 30.0, 30.0),
+            ..default()
+        },
         ..default()
     });
 
@@ -70,6 +75,19 @@ fn joint_animation(
     for skinned_mesh_parent in &parent_query {
         let mesh_node_entity = skinned_mesh_parent.get();
         let mesh_node_children = children_query.get(mesh_node_entity).unwrap();
+        if mesh_node_children.len() == 1 {
+            let first_joint_entity = mesh_node_children[0];
+
+            let mut first_joint_transform = transform_query.get_mut(first_joint_entity).unwrap();
+            //let first_joint_children = children_query.get(first_joint_entity).unwrap();
+            //first_joint_transform.translation.x = 1.1;
+            //info!("{:#?}", first_joint_transform.rotation);
+
+            first_joint_transform.rotation =
+                Quat::from_rotation_x(FRAC_PI_2 * time.elapsed_seconds().sin() * 2.0);
+            return;
+        }
+
         let first_joint_entity = mesh_node_children[1];
         let first_joint_children = children_query.get(first_joint_entity).unwrap();
 
