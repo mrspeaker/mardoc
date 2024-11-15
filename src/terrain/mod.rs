@@ -23,6 +23,12 @@ fn greet_terrain(time: Res<Time>, mut timer: ResMut<GreetTimer>, _query: Query<&
     }
 }
 
+fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    return (dx * dx + dy * dy).sqrt();
+}
+
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -37,15 +43,16 @@ fn setup(
     if let Some(VertexAttributeValues::Float32x3(
         positions,
     )) = terrain.attribute_mut(Mesh::ATTRIBUTE_POSITION) {
-         let terrain_height = 70.;
+        let terrain_height = 70.;
         let noise = BasicMulti::<Perlin>::default();
 
         for pos in positions.iter_mut() {
             let val = noise.get([
                 pos[0] as f64 / 300.0,
-                pos[2] as f64/ 300.0
+                pos[2] as f64 / 300.0
             ]);
-            pos[1] = val as f32 * terrain_height;
+            let d = dist(0 as f64, 0 as f64, pos[0] as f64, pos[2] as f64);
+            pos[1] = if d < 100.0 {0.0 as f32} else {val as f32 * terrain_height};
         }
         terrain.compute_normals();
     }
@@ -57,5 +64,5 @@ fn setup(
             ..default()
         },
         Terrain
-    ));
+    )); 
 }
