@@ -2,6 +2,7 @@ use crate::terrain::TerrainPlugin;
 use crate::nim::NimPlugin;
 
 use bevy::{prelude::*, render::mesh::skinning::SkinnedMesh};
+use bevy::scene::SceneInstanceReady;
 
 use std::f32::consts::*;
 
@@ -10,7 +11,10 @@ use bevy_panorbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
 pub struct GamePlugin;
 
 #[derive(Component)]
-struct MyArm;
+struct GltfSceneInit;
+
+#[derive(Component)]
+struct Jointy;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
@@ -18,7 +22,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(NimPlugin);
         app.add_plugins(TerrainPlugin);
         app.add_systems(Startup, setup_scene);
-        app.add_systems(Update, log_scene_entities);
+        app.add_systems(Update, (tag_scene_entities, animate_joints));
     }
 }
 
@@ -57,39 +61,79 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
     });*/
 
 
-    commands.spawn((SceneBundle {
-        scene: asset_server
-            .load(GltfAssetLabel::Scene(0).from_asset("arm.gltf")),
-        transform: Transform {
-            translation: Vec3::new(0.0, 1.0, 0.0),
-            scale:Vec3::new( 10.0, 10.0, 10.0),
+    commands
+        .spawn((SceneBundle {
+            scene: asset_server
+                .load(GltfAssetLabel::Scene(0).from_asset("arm.gltf")),
+            transform: Transform {
+                translation: Vec3::new(0.0, 1.0, 0.0),
+                scale:Vec3::new( 10.0, 10.0, 10.0),
+                ..default()
+            },
             ..default()
-        },
-        ..default()
-    }, MyArm));
+        }
+                , GltfSceneInit))
+        .observe(daf);
+
+
+    commands
+        .spawn((SceneBundle {
+            scene: asset_server
+                .load(GltfAssetLabel::Scene(0).from_asset("arm.gltf")),
+            transform: Transform {
+                translation: Vec3::new(20.0, 1.0, 0.0),
+                scale:Vec3::new( 10.0, 10.0, 10.0),
+                ..default()
+            },
+            ..default()
+        }
+                , GltfSceneInit));
 
 }
 
-fn log_scene_entities(
-    time: Res<Time>,
+fn daf(
+    trigger: Trigger<SceneInstanceReady>,
     children: Query<&Children>,
-    scene: Query<Entity, With<MyArm>>,
-    mut deets: Query<(&mut Transform, &Name)>,
+) {
+    let entity = children.get(trigger.entity()).unwrap()[0];
+    info!("trigs? {}", entity);
+}
+
+fn tag_scene_entities(
+    mut commands: Commands,
+    children: Query<&Children>,
+    scene: Query<Entity, With<GltfSceneInit>>,
+    mut deets: Query<&Name>,
 ) {
     for scene_entity in &scene {
+        let mut loaded = false;
+        info!("Is gltf scene really loaded?");
         for entity in children.iter_descendants(scene_entity) {
-            if let Ok((mut transform, name)) = deets.get_mut(entity) {
+            if let Ok(name) = deets.get_mut(entity) {
                 if *name == Name::new("forearm") {
-                    transform.rotation =
-                        Quat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds().sin() * 0.5);
+                    commands.entity(entity).insert(Jointy);
+                    loaded = true;
                 }
             }
+        }
+        if loaded {
+            commands.entity(scene_entity).remove::<GltfSceneInit>();
         }
     }
 }
 
+fn animate_joints(
+    time: Res<Time>,
+    mut joints: Query<&mut Transform, With<Jointy>>,
+) {
+    for mut t in joints.iter_mut() {
+        t.rotation =
+            Quat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds().sin() * 0.5);
 
-fn joint_animation(
+    }
+}
+
+fn joint_animation_(
     time: Res<Time>,
     parent_query: Query<(&Parent, &Name), With<SkinnedMesh>>,
     children_query: Query<&Children>,
