@@ -44,5 +44,8 @@ fn move_nim(mut query: Query<&mut Transform, With<Nim>>, time: Res<Time>) {
         t.rotate_y(time.delta_seconds() / 2.0);
         let up = t.up();
         t.translation += up * time.delta_seconds();
+        if t.translation.y > 30.0 {
+            t.translation.y = -1.0;
+        }
     }
 }

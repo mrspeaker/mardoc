@@ -35,7 +35,7 @@
 		},
 		{
 			"mesh":0,
-			"name":"arm",
+			"name":"arm_mesh",
 			"skin":0
 		},
 		{
@@ -64,7 +64,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cube",
+			"name":"arm_cube_verts",
 			"primitives":[
 				{
 					"attributes":{
