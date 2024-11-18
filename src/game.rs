@@ -60,6 +60,9 @@ fn tag_gltf_heirachy(
             if *name == Name::new("forearm") {
                 commands.entity(entity).insert(Jointy);
             }
+            if *name == Name::new("shoulder") {
+                commands.entity(entity).insert(Jointy);
+            }
         }
     }
 }
