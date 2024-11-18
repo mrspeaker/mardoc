@@ -59,6 +59,14 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_scale(Vec3::new(10.0, 10.0, 10.0))
         ));
 
+    commands
+        .spawn((SceneRoot(
+            asset_server
+                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
+            Transform::from_xyz(10.0, 0.0, -10.0)
+                .with_scale(Vec3::new(10.0, 10.0, 10.0))
+        ));
+
 }
 
 fn tag_gltf_heirachy(
@@ -75,21 +83,21 @@ fn tag_gltf_heirachy(
             if *name == Name::new("shoulder") {
                 commands.entity(entity).insert((Jointy, Timey(10.0)));
             }
+            if *name == Name::new("hand") {
+                commands.entity(entity).insert((Jointy, Timey(5.0)));
+            }
         }
     }
 }
 
 fn animate_joints(
-    time: Res<Time>,
     mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
 ) {
     for (mut t, timey) in joints.iter_mut() {
-        let sec = timey.0;//time.elapsed_secs();
+        let sec = timey.0;
         t.rotation =
             Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
             .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
             .normalize();
-
     }
 }
-
