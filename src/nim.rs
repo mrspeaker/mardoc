@@ -29,8 +29,6 @@ fn setup(
             Transform::from_xyz(0.0, 0.0, 1.5)
         ));
     });
-
-    // meshes.add(Cylinder::default())
 }
 
 fn move_nim(mut query: Query<&mut Transform, With<Nim>>, time: Res<Time>) {

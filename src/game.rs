@@ -36,7 +36,7 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Transform::from_xyz(0.0, 5.0, 0.0)
-            .with_rotation(Quat::from_rotation_x(-PI / 4.))
+            .with_rotation(Quat::from_rotation_x(-PI / 8.))
     ));
 
     commands
@@ -71,8 +71,9 @@ fn animate_joints(
     for mut t in joints.iter_mut() {
         let sec = time.elapsed_secs();
         t.rotation =
-            Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5).add(
-            Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4)).normalize();
+            Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
+            .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
+            .normalize();
 
     }
 }
