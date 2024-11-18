@@ -1,5 +1,5 @@
 use bevy::{prelude::*, render::mesh::VertexAttributeValues};
-use noise::{NoiseFn, Perlin, Seedable, BasicMulti};
+use noise::{NoiseFn, Perlin, BasicMulti};
 
 #[derive(Component)]
 struct Terrain;
@@ -19,7 +19,7 @@ impl Plugin for TerrainPlugin {
 
 fn greet_terrain(time: Res<Time>, mut timer: ResMut<GreetTimer>, _query: Query<&Terrain>) {
     if timer.0.tick(time.delta()).just_finished() {
-        println!("hello");
+//        println!("hello");
     }
 }
 
@@ -58,11 +58,8 @@ fn setup(
     }
 
     commands.spawn((
-        PbrBundle  {
-            mesh: meshes.add(terrain),
-            material: materials.add(Color::WHITE),
-            ..default()
-        },
+        Mesh3d(meshes.add(terrain)),
+        MeshMaterial3d(materials.add(Color::WHITE)),
         Terrain
     )); 
 }
