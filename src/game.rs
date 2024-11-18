@@ -12,13 +12,25 @@ pub struct GamePlugin;
 #[derive(Component)]
 struct Jointy;
 
+#[derive(Component)]
+struct Timey(f32);
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(NimPlugin);
         app.add_plugins(TerrainPlugin);
         app.add_systems(Startup, setup_scene);
-        app.add_systems(Update, animate_joints);
+        app.add_systems(Update, (update_timers, animate_joints));
         app.add_observer(tag_gltf_heirachy);
+    }
+}
+
+fn update_timers(
+    time: Res<Time>,
+    mut timer: Query<&mut Timey>
+) {
+    for mut t in timer.iter_mut() {
+        t.0 += time.delta_secs();
     }
 }
 
@@ -58,10 +70,10 @@ fn tag_gltf_heirachy(
     for entity in children.iter_descendants(trigger.entity()) {
         if let Ok(name) = deets.get(entity) {
             if *name == Name::new("forearm") {
-                commands.entity(entity).insert(Jointy);
+                commands.entity(entity).insert((Jointy, Timey(0.0)));
             }
             if *name == Name::new("shoulder") {
-                commands.entity(entity).insert(Jointy);
+                commands.entity(entity).insert((Jointy, Timey(10.0)));
             }
         }
     }
@@ -69,10 +81,10 @@ fn tag_gltf_heirachy(
 
 fn animate_joints(
     time: Res<Time>,
-    mut joints: Query<&mut Transform, With<Jointy>>,
+    mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
 ) {
-    for mut t in joints.iter_mut() {
-        let sec = time.elapsed_secs();
+    for (mut t, timey) in joints.iter_mut() {
+        let sec = timey.0;//time.elapsed_secs();
         t.rotation =
             Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
             .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
