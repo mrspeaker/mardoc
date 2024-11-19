@@ -73,19 +73,42 @@ fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
     children: Query<&Children>,
-    deets: Query<&Name>,
+    deets: Query<(&GlobalTransform, Option<&Name>)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let mat = MeshMaterial3d(materials.add(StandardMaterial {
+        base_color: Srgba::hex("#ffd891").unwrap().into(),
+        ..default()
+    }));
+
+    // root transform = transform.
     for entity in children.iter_descendants(trigger.entity()) {
-        if let Ok(name) = deets.get(entity) {
-            if *name == Name::new("forearm") {
-                commands.entity(entity).insert((Jointy, Timey(0.0)));
+        info!("i: {}", entity);
+        if let Ok((transform, name)) = deets.get(entity) {
+            if let Some(name) = name {
+                info!("n: {} {:?}", name, transform);
+                if *name == Name::new("forearm") {
+                    commands.entity(entity).insert((Jointy, Timey(0.0)));
+                }
+                if *name == Name::new("shoulder") {
+                    // flat to start adding to transform from here
+                    // do_trans = true...
+
+                    commands.entity(entity).insert((Jointy, Timey(10.0)));
+                }
+                if *name == Name::new("hand") {
+                    commands.entity(entity).insert((Jointy, Timey(5.0)));
+                }
+            } else {
+                info!("t: {:?}", transform);
             }
-            if *name == Name::new("shoulder") {
-                commands.entity(entity).insert((Jointy, Timey(10.0)));
-            }
-            if *name == Name::new("hand") {
-                commands.entity(entity).insert((Jointy, Timey(5.0)));
-            }
+
+            commands.spawn((
+                Mesh3d(meshes.add(Cuboid::default())),
+                mat.clone(),
+                transform.clone()
+            ));
         }
     }
 }
