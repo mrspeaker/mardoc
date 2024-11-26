@@ -15,12 +15,15 @@ struct Jointy;
 #[derive(Component)]
 struct Timey(f32);
 
+#[derive(Component)]
+struct GltfLoaded;
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(NimPlugin);
         app.add_plugins(TerrainPlugin);
         app.add_systems(Startup, setup_scene);
-        app.add_systems(Update, (update_timers, animate_joints));
+        app.add_systems(Update, (update_timers, add_bone_cube, animate_joints));
         app.add_observer(tag_gltf_heirachy);
     }
 }
@@ -52,18 +55,22 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     commands
-        .spawn((SceneRoot(
-            asset_server
-                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-            Transform::from_xyz(0.0, 0.0, 0.0)
+        .spawn((
+            Name::new("Arm1"),
+            SceneRoot(
+                asset_server
+                    .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
+            Transform::from_xyz(-5.0, 0.0, 5.0)
                 .with_scale(Vec3::new(10.0, 10.0, 10.0))
         ));
 
     commands
-        .spawn((SceneRoot(
+        .spawn((
+            Name::new("Arm2"),
+            SceneRoot(
             asset_server
                 .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-            Transform::from_xyz(10.0, 0.0, -10.0)
+            Transform::from_xyz(5.0, 0.0, -5.0)
                 .with_scale(Vec3::new(10.0, 10.0, 10.0))
         ));
 
@@ -73,7 +80,7 @@ fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
     children: Query<&Children>,
-    deets: Query<(&GlobalTransform, Option<&Name>)>,
+    deets: Query<(&GlobalTransform, &Parent, Option<&Name>)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -82,12 +89,16 @@ fn tag_gltf_heirachy(
         ..default()
     }));
 
+    let root = trigger.entity();
+
+    commands.entity(root).insert(GltfLoaded);
+
     // root transform = transform.
-    for entity in children.iter_descendants(trigger.entity()) {
+    for entity in children.iter_descendants(root) {
         info!("i: {}", entity);
-        if let Ok((transform, name)) = deets.get(entity) {
+        if let Ok((transform, parent, name)) = deets.get(entity) {
             if let Some(name) = name {
-                info!("n: {} {:?}", name, transform);
+                info!("n: {} {:?} {:?}", name, parent, transform);
                 if *name == Name::new("forearm") {
                     commands.entity(entity).insert((Jointy, Timey(0.0)));
                 }
@@ -98,18 +109,39 @@ fn tag_gltf_heirachy(
                     commands.entity(entity).insert((Jointy, Timey(10.0)));
                 }
                 if *name == Name::new("hand") {
-                    commands.entity(entity).insert((Jointy, Timey(5.0)));
+                    commands.entity(entity).insert((Jointy, Timey(3.0)));
                 }
             } else {
                 info!("t: {:?}", transform);
             }
 
-            commands.spawn((
+/*            commands.spawn((
                 Mesh3d(meshes.add(Cuboid::default())),
                 mat.clone(),
                 transform.clone()
-            ));
+            ));*/
         }
+    }
+}
+
+fn add_bone_cube(
+    mut commands: Commands,
+    deets: Query<(&Transform, &Parent, Option<&Name>), Added<Jointy>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let mat = MeshMaterial3d(materials.add(StandardMaterial {
+        base_color: Srgba::hex("#ffd891").unwrap().into(),
+        ..default()
+    }));
+
+    for (transform, parent, name) in deets.iter() {
+        info!("n: {:?} {:?}",  parent, transform);
+            commands.spawn((
+                Mesh3d(meshes.add(Cuboid::default())),
+                mat.clone(),
+                transform.clone().with_scale(Vec3::new(10.0, 10.0, 10.0))
+            ));
     }
 }
 
