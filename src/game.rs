@@ -10,6 +10,9 @@ use std::ops::Add;
 pub struct GamePlugin;
 
 #[derive(Component)]
+struct Person;
+
+#[derive(Component)]
 struct Jointy;
 
 #[derive(Component)]
@@ -18,13 +21,17 @@ struct Timey(f32);
 #[derive(Component)]
 struct GltfLoaded;
 
+#[derive(Debug, Event)]
+struct SpawnPerson(Vec3);
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(NimPlugin);
         app.add_plugins(TerrainPlugin);
         app.add_systems(Startup, setup_scene);
-        app.add_systems(Update, (update_timers, add_bone_cube, animate_joints));
+        app.add_systems(Update, (update_timers, add_bone_cube, animate_joints, move_person));
         app.add_observer(tag_gltf_heirachy);
+        app.add_observer(spawn_person);
     }
 }
 
@@ -37,10 +44,12 @@ fn update_timers(
     }
 }
 
-fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_scene(
+    mut commands: Commands,
+) {
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(20., 10., 20.)
+        Transform::from_xyz(0., 10., 40.)
             .looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
     ));
 
@@ -54,25 +63,61 @@ fn setup_scene(mut commands: Commands, asset_server: Res<AssetServer>) {
             .with_rotation(Quat::from_rotation_x(-PI / 8.))
     ));
 
-    commands
-        .spawn((
-            Name::new("Arm1"),
-            SceneRoot(
-                asset_server
-                    .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-            Transform::from_xyz(-5.0, 0.0, 5.0)
-                .with_scale(Vec3::new(10.0, 10.0, 10.0))
+    commands.trigger(SpawnPerson(Vec3::new(-10.0, 0.0, -10.)));
+    commands.trigger(SpawnPerson(Vec3::new(0., 0., -20.)));
+    commands.trigger(SpawnPerson(Vec3::ZERO));
+
+}
+
+fn spawn_person(
+    trigger: Trigger<SpawnPerson>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let event = trigger.event();
+
+    let mat = MeshMaterial3d(materials.add(StandardMaterial {
+        base_color: Srgba::hex("#ffffff").unwrap().into(),
+        ..default()
+    }));
+
+    commands.spawn((
+        Name::new("Person"),
+        Transform::from_translation(event.0),
+        Person
+    )).with_children(|parent| {
+        parent.spawn((
+            Name::new("Body"),
+            Mesh3d(meshes.add(Cuboid::new(3.0, 8.0, 1.5))),
+            mat.clone(),
+            Transform::from_xyz(0.0, 4.0, 0.0)
         ));
 
-    commands
-        .spawn((
-            Name::new("Arm2"),
-            SceneRoot(
-            asset_server
-                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-            Transform::from_xyz(5.0, 0.0, -5.0)
-                .with_scale(Vec3::new(10.0, 10.0, 10.0))
-        ));
+        parent
+            .spawn((
+                Name::new("Arm1"),
+                SceneRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
+                Transform::from_xyz(-1.4, 4.0, 0.0)
+                    .with_rotation(Quat::from_rotation_z(PI / 2.))
+                    .with_scale(Vec3::new(10.0, 10.0, 10.0))
+
+            ));
+
+        parent
+            .spawn((
+                Name::new("Arm2"),
+                SceneRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
+                Transform::from_xyz(1.4, 4.0, 0.0)
+                    .with_rotation(Quat::from_euler(EulerRot::YXZ, 0.0, 0., -PI / 2.))
+                    .with_scale(Vec3::new(10.0, 10.0, 10.0))
+            ));
+    });
 
 }
 
@@ -124,6 +169,15 @@ fn tag_gltf_heirachy(
     }
 }
 
+fn move_person(
+    time: Res<Time>,
+    mut q: Query<&mut Transform, With<Person>>
+) {
+    for mut transform in q.iter_mut() {
+        transform.translation.x += time.elapsed_secs().sin() * 0.1;
+    }
+}
+
 fn add_bone_cube(
     mut commands: Commands,
     deets: Query<(&Transform, &Parent, Option<&Name>), Added<Jointy>>,
@@ -140,7 +194,7 @@ fn add_bone_cube(
             commands.spawn((
                 Mesh3d(meshes.add(Cuboid::default())),
                 mat.clone(),
-                transform.clone().with_scale(Vec3::new(10.0, 10.0, 10.0))
+                transform.clone()//.with_scale(Vec3::new(10.0, 10.0, 10.0))
             ));
     }
 }
