@@ -5,10 +5,16 @@ use bevy::prelude::*;
 pub struct PersonPlugin;
 
 #[derive(Debug, Event)]
-pub struct SpawnPerson(pub Vec3);
+pub struct SpawnPerson {
+    pub pos: Vec3,
+    pub speed: f32
+}
 
 #[derive(Component)]
 struct Person;
+
+#[derive(Component)]
+struct Speed(f32);
 
 impl Plugin for PersonPlugin {
     fn build(&self, app: &mut App) {
@@ -33,14 +39,19 @@ fn spawn_person(
 
     commands.spawn((
         Name::new("Person"),
-        Transform::from_translation(event.0),
-        Person
+        Transform::from_translation(event.pos),
+        Person,
+        Speed(event.speed)
     )).with_children(|parent| {
+
+        let h = 1.8;
+        let w = 0.8;
+
         parent.spawn((
             Name::new("Body"),
-            Mesh3d(meshes.add(Cuboid::new(3.0, 8.0, 1.5))),
+            Mesh3d(meshes.add(Cuboid::new(w, h, 0.5))),
             mat.clone(),
-            Transform::from_xyz(0.0, 4.0, 0.0)
+            Transform::from_xyz(0.0, h/2.0, 0.0)
         ));
 
         parent
@@ -49,9 +60,9 @@ fn spawn_person(
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-                Transform::from_xyz(-1.4, 4.0, 0.0)
+                Transform::from_xyz(-w/2.0, h * 0.75, 0.0)
                     .with_rotation(Quat::from_rotation_z(PI / 2.))
-                    .with_scale(Vec3::new(10.0, 10.0, 10.0))
+                    .with_scale(Vec3::splat(2.0))
 
             ));
 
@@ -61,9 +72,9 @@ fn spawn_person(
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-                Transform::from_xyz(1.4, 4.0, 0.0)
+                Transform::from_xyz(w/2.0, h*0.75, 0.0)
                     .with_rotation(Quat::from_euler(EulerRot::YXZ, 0.0, 0., -PI / 2.))
-                    .with_scale(Vec3::new(10.0, 10.0, 10.0))
+                    .with_scale(Vec3::splat(2.0))
             ));
     });
 
@@ -71,9 +82,12 @@ fn spawn_person(
 
 fn move_person(
     time: Res<Time>,
-    mut q: Query<&mut Transform, With<Person>>
+    mut q: Query<(&mut Transform, &Speed), With<Person>>
 ) {
-    for mut transform in q.iter_mut() {
-        transform.translation.x += time.elapsed_secs().sin() * 0.1;
+    let dt = time.delta_secs();
+    for (mut transform, speed) in q.iter_mut() {
+        transform.rotate_y(speed.0 * 0.5 * dt);
+        let move_amount = transform.local_z() * speed.0 * dt;
+        transform.translation += move_amount;
     }
 }

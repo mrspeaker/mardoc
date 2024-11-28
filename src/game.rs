@@ -28,7 +28,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(TerrainPlugin);
 
         app.add_systems(Startup, setup_scene);
-        app.add_systems(Update, (update_timers, add_bone_cube, animate_joints));
+        app.add_systems(Update, (update_timers, animate_joints));
 
         app.add_observer(tag_gltf_heirachy);
     }
@@ -48,7 +48,7 @@ fn setup_scene(
 ) {
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(0., 10., 40.)
+        Transform::from_xyz(0., 2., 50.)
             .looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
     ));
 
@@ -64,9 +64,9 @@ fn setup_scene(
 
     let mut rng = rand::thread_rng();    
     let half = 50.0;
-    for i in 0..20 {
+    for _ in 0..20 {
         let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
-        commands.trigger(SpawnPerson(pos));
+        commands.trigger(SpawnPerson { pos, speed: rng.gen_range(0.2..1.2) });
     }
 }
 
@@ -137,6 +137,6 @@ fn animate_joints(
         t.rotation =
             Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
             .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
-            .normalize();
+            .normalize() * 2.0;
     }
 }
