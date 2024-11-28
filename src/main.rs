@@ -1,6 +1,7 @@
 mod game;
 pub mod terrain;
 pub mod nim;
+pub mod person;
 
 use bevy::prelude::*;
 
