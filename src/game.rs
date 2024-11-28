@@ -1,11 +1,12 @@
 use crate::terrain::TerrainPlugin;
 use crate::nim::NimPlugin;
-use crate::person::PersonPlugin;
-use crate::person::SpawnPerson;
-use rand::prelude::*;
+use crate::player::PlayerPlugin;
+use crate::person::{PersonPlugin,SpawnPerson};
 
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
+
+use rand::prelude::*;
 
 use std::f32::consts::*;
 use std::ops::Add;
@@ -24,6 +25,7 @@ struct GltfLoaded;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(NimPlugin);
+        app.add_plugins(PlayerPlugin);
         app.add_plugins(PersonPlugin);
         app.add_plugins(TerrainPlugin);
 
@@ -46,11 +48,6 @@ fn update_timers(
 fn setup_scene(
     mut commands: Commands,
 ) {
-    commands.spawn((
-        Camera3d::default(),
-        Transform::from_xyz(0., 2., 50.)
-            .looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
-    ));
 
     commands.spawn((
         DirectionalLight {
@@ -62,7 +59,7 @@ fn setup_scene(
             .with_rotation(Quat::from_rotation_x(-PI / 8.))
     ));
 
-    let mut rng = rand::thread_rng();    
+    let mut rng = rand::thread_rng();
     let half = 50.0;
     for _ in 0..20 {
         let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
@@ -75,14 +72,7 @@ fn tag_gltf_heirachy(
     mut commands: Commands,
     children: Query<&Children>,
     deets: Query<(&GlobalTransform, &Parent, Option<&Name>)>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let mat = MeshMaterial3d(materials.add(StandardMaterial {
-        base_color: Srgba::hex("#ffd891").unwrap().into(),
-        ..default()
-    }));
-
     let root = trigger.entity();
 
     commands.entity(root).insert(GltfLoaded);
@@ -108,27 +98,6 @@ fn tag_gltf_heirachy(
     }
 }
 
-fn add_bone_cube(
-    mut commands: Commands,
-    deets: Query<(&Transform, &Parent, Option<&Name>), Added<Jointy>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let mat = MeshMaterial3d(materials.add(StandardMaterial {
-        base_color: Srgba::hex("#ffd891").unwrap().into(),
-        ..default()
-    }));
-
-    for (transform, parent, name) in deets.iter() {
-        info!("n: {:?} {:?}",  parent, transform);
-            commands.spawn((
-                Mesh3d(meshes.add(Cuboid::default())),
-                mat.clone(),
-                transform.clone()
-            ));
-    }
-}
-
 fn animate_joints(
     mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
 ) {
@@ -140,3 +109,4 @@ fn animate_joints(
             .normalize() * 2.0;
     }
 }
+

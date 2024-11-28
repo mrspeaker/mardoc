@@ -21,6 +21,7 @@ fn setup(
     commands.spawn((
         Mesh3d(mesh.clone()),
         MeshMaterial3d(materials.add(Color::BLACK)),
+        Visibility::Visible,
         Nim
     )).with_children(|parent| {
         parent.spawn((

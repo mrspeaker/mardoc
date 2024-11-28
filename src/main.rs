@@ -2,6 +2,7 @@ mod game;
 pub mod terrain;
 pub mod nim;
 pub mod person;
+pub mod player;
 
 use bevy::prelude::*;
 

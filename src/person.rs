@@ -33,13 +33,14 @@ fn spawn_person(
     let event = trigger.event();
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
-        base_color: Srgba::hex("#ffffff").unwrap().into(),
+        base_color: Srgba::hex("#ff00ff").unwrap().into(),
         ..default()
     }));
 
     commands.spawn((
         Name::new("Person"),
         Transform::from_translation(event.pos),
+        Visibility::Visible,
         Person,
         Speed(event.speed)
     )).with_children(|parent| {
@@ -86,7 +87,7 @@ fn move_person(
 ) {
     let dt = time.delta_secs();
     for (mut transform, speed) in q.iter_mut() {
-        transform.rotate_y(speed.0 * 0.5 * dt);
+        transform.rotate_local_y(speed.0 * 0.5 * dt);
         let move_amount = transform.local_z() * speed.0 * dt;
         transform.translation += move_amount;
     }
