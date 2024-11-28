@@ -1,6 +1,8 @@
 use crate::terrain::TerrainPlugin;
 use crate::nim::NimPlugin;
 use crate::person::PersonPlugin;
+use crate::person::SpawnPerson;
+use rand::prelude::*;
 
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
@@ -24,8 +26,10 @@ impl Plugin for GamePlugin {
         app.add_plugins(NimPlugin);
         app.add_plugins(PersonPlugin);
         app.add_plugins(TerrainPlugin);
+
         app.add_systems(Startup, setup_scene);
         app.add_systems(Update, (update_timers, add_bone_cube, animate_joints));
+
         app.add_observer(tag_gltf_heirachy);
     }
 }
@@ -58,6 +62,12 @@ fn setup_scene(
             .with_rotation(Quat::from_rotation_x(-PI / 8.))
     ));
 
+    let mut rng = rand::thread_rng();    
+    let half = 50.0;
+    for i in 0..20 {
+        let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
+        commands.trigger(SpawnPerson(pos));
+    }
 }
 
 fn tag_gltf_heirachy(
@@ -77,7 +87,6 @@ fn tag_gltf_heirachy(
 
     commands.entity(root).insert(GltfLoaded);
 
-    // root transform = transform.
     for entity in children.iter_descendants(root) {
         info!("i: {}", entity);
         if let Ok((transform, parent, name)) = deets.get(entity) {
@@ -87,9 +96,6 @@ fn tag_gltf_heirachy(
                     commands.entity(entity).insert((Jointy, Timey(0.0)));
                 }
                 if *name == Name::new("shoulder") {
-                    // flat to start adding to transform from here
-                    // do_trans = true...
-
                     commands.entity(entity).insert((Jointy, Timey(10.0)));
                 }
                 if *name == Name::new("hand") {
@@ -98,12 +104,6 @@ fn tag_gltf_heirachy(
             } else {
                 info!("t: {:?}", transform);
             }
-
-/*            commands.spawn((
-                Mesh3d(meshes.add(Cuboid::default())),
-                mat.clone(),
-                transform.clone()
-            ));*/
         }
     }
 }
@@ -124,7 +124,7 @@ fn add_bone_cube(
             commands.spawn((
                 Mesh3d(meshes.add(Cuboid::default())),
                 mat.clone(),
-                transform.clone()//.with_scale(Vec3::new(10.0, 10.0, 10.0))
+                transform.clone()
             ));
     }
 }

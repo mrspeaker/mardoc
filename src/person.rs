@@ -5,26 +5,16 @@ use bevy::prelude::*;
 pub struct PersonPlugin;
 
 #[derive(Debug, Event)]
-struct SpawnPerson(Vec3);
+pub struct SpawnPerson(pub Vec3);
 
 #[derive(Component)]
 struct Person;
 
 impl Plugin for PersonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
         app.add_systems(Update, move_person);
         app.add_observer(spawn_person);
-
     }
-}
-
-fn setup(
-    mut commands: Commands,
-) {
-    commands.trigger(SpawnPerson(Vec3::new(-10.0, 0.0, -10.)));
-    commands.trigger(SpawnPerson(Vec3::new(0., 0., -20.)));
-    commands.trigger(SpawnPerson(Vec3::ZERO));
 }
 
 fn spawn_person(
