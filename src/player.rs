@@ -40,7 +40,7 @@ fn setup(
             Name::new("Arm"),
             Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.5))),
             mat,
-            Transform::from_xyz(0.2, -0.1, -10.25),
+            Transform::from_xyz(0.2, 0.8, -10.25),
             NotShadowCaster,
         ));
 
