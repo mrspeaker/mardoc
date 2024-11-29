@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
+use bevy::pbr::NotShadowCaster;
 
 pub struct PlayerPlugin;
 
@@ -15,7 +16,15 @@ impl Plugin for PlayerPlugin {
 
 fn setup(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+
+    let mat = MeshMaterial3d(materials.add(StandardMaterial {
+        base_color: Srgba::hex("#ff00ff").unwrap().into(),
+        ..default()
+    }));
+
     commands.spawn((
         Name::new("Player1"),
         Player,
@@ -26,6 +35,15 @@ fn setup(
             Transform::from_xyz(0., 1.5, 0.)
                 .looking_at(Vec3::new(0., 1.5, 0.), Vec3::Y),
         ));
+
+        parent.spawn((
+            Name::new("Arm"),
+            Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.5))),
+            mat,
+            Transform::from_xyz(0.2, -0.1, -10.25),
+            NotShadowCaster,
+        ));
+
     });
 }
 
