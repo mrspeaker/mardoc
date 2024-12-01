@@ -6,6 +6,7 @@ use bevy::pbr::VolumetricLight;
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
 use bevy::app::AppExit;
+use bevy::window::{CursorGrabMode, PrimaryWindow};
 
 use rand::prelude::*;
 
@@ -30,17 +31,28 @@ impl Plugin for GamePlugin {
         app.add_plugins(PersonPlugin);
         app.add_plugins(TerrainPlugin);
 
-        app.add_systems(Startup, setup_scene);
+        app.add_systems(Startup, (setup_scene, cursor_grab));
         app.add_systems(Update, (update_timers, animate_joints, ray_cast_system, exit_system));
 
         app.add_observer(tag_gltf_heirachy);
     }
 }
 
+fn cursor_grab(
+    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
+) {
+    let mut primary_window = q_windows.single_mut();
+    primary_window.cursor_options.grab_mode = CursorGrabMode::Confined;
+    primary_window.cursor_options.grab_mode = CursorGrabMode::Locked;
+    primary_window.cursor_options.visible = false;
+}
+
 fn ray_cast_system(
     mut ray_cast: MeshRayCast,
     cam: Query<(&Transform, &GlobalTransform), With<Player>>,
-    query: Query<(), With<Pickable>>
+    buttons: Res<ButtonInput<MouseButton>>,
+    query: Query<(), With<Pickable>>,
+    mut commands: Commands,
 ) {
     let (transform, global_transform) = cam.single();
     let ray = Ray3d::new(transform.translation, global_transform.forward());
@@ -55,8 +67,14 @@ fn ray_cast_system(
         .with_visibility(visibility);
 
     let hits = ray_cast.cast_ray(ray, &settings);
-    if hits.len() > 0 {
+    if buttons.just_pressed(MouseButton::Left) && hits.len() > 0 {
         info!("{:?}", hits.len());
+        for (e, rmh) in hits.iter() {
+            info!("{:?}", rmh.triangle.unwrap());
+            commands.trigger(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 });
+            //commands.entity(*e).despawn();
+            commands.entity(*e).remove::<Pickable>();
+        }
     }
 }
 
@@ -93,7 +111,7 @@ fn setup_scene(
     ));
 
     let mut rng = rand::thread_rng();
-    let half = 10.0;
+    let half = 60.0;
     for _ in 0..20 {
         let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
         commands.trigger(SpawnPerson { pos, speed: rng.gen_range(0.2..1.2) });
