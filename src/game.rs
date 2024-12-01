@@ -2,6 +2,8 @@ use crate::terrain::TerrainPlugin;
 use crate::nim::NimPlugin;
 use crate::player::{PlayerPlugin,Player};
 use crate::person::{Pickable,PersonPlugin,SpawnPerson};
+use crate::town::TownPlugin;
+
 use bevy::pbr::VolumetricLight;
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
@@ -30,6 +32,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(PlayerPlugin);
         app.add_plugins(PersonPlugin);
         app.add_plugins(TerrainPlugin);
+        app.add_plugins(TownPlugin);
 
         app.add_systems(Startup, (setup_scene, cursor_grab));
         app.add_systems(Update, (update_timers, animate_joints, ray_cast_system, exit_system));
@@ -98,6 +101,7 @@ fn update_timers(
 
 fn setup_scene(
     mut commands: Commands,
+    mut ambient_light: ResMut<AmbientLight>
 ) {
     commands.spawn((
         DirectionalLight {
@@ -106,9 +110,11 @@ fn setup_scene(
             ..default()
         },
         VolumetricLight,
-        Transform::from_xyz(0.0, 5.0, 0.0)
-            .with_rotation(Quat::from_rotation_x(-PI / 8.))
+        Transform::from_xyz(0.0, 10.0, 0.0)
+            .with_rotation(Quat::from_rotation_x(-PI / 4.))
     ));
+
+    ambient_light.brightness = 800.0;
 
     let mut rng = rand::thread_rng();
     let half = 60.0;
@@ -130,10 +136,10 @@ fn tag_gltf_heirachy(
     commands.entity(root).insert(GltfLoaded);
 
     for entity in children.iter_descendants(root) {
-        info!("i: {}", entity);
+        //info!("i: {}", entity);
         if let Ok((transform, parent, name)) = deets.get(entity) {
             if let Some(name) = name {
-                info!("n: {} {:?} {:?}", name, parent, transform);
+                // info!("n: {} {:?} {:?}", name, parent, transform);
                 if *name == Name::new("forearm") {
                     commands.entity(entity).insert((Jointy, Timey(0.0)));
                 }
@@ -144,7 +150,7 @@ fn tag_gltf_heirachy(
                     commands.entity(entity).insert((Jointy, Timey(3.0)));
                 }
             } else {
-                info!("t: {:?}", transform);
+                // info!("t: {:?}", transform);
             }
         }
     }

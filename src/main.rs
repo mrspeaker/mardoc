@@ -3,6 +3,7 @@ pub mod terrain;
 pub mod nim;
 pub mod person;
 pub mod player;
+pub mod town;
 
 use bevy::prelude::*;
 

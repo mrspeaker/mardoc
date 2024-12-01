@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
 use bevy::pbr::{NotShadowCaster,VolumetricFog};
+use std::f32::consts::*;
 
 pub struct PlayerPlugin;
 
@@ -21,6 +22,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
@@ -32,7 +34,7 @@ fn setup(
         Name::new("Liney"),
         Mesh3d(meshes.add(Cuboid::new(0.1, 0.1, 50.0))),
         mat.clone(),
-        Transform::from_xyz(0.0, 1.5, -25.0),
+        Transform::from_xyz(0.0, 0.0, -25.0),
     ));
 
     commands.spawn((
@@ -55,11 +57,24 @@ fn setup(
             ..default()
         });
 
+        parent
+            .spawn((
+                Name::new("Hand"),
+                SceneRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("hand.glb"))),
+                Transform::from_xyz(1.2, 0.5, -2.25)
+                    .with_rotation(Quat::from_rotation_y(PI / 1.))
+                    .with_scale(Vec3::splat(1.0))
+
+            ));
+
+
         parent.spawn((
             Name::new("Arm"),
-            Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.5))),
+            Mesh3d(meshes.add(Cuboid::new(0.2, 0.2, 0.2))),
             mat,
-            Transform::from_xyz(0.2, -0.1, -10.25),
+            Transform::from_xyz(0.2, 1.4, -5.25),
             NotShadowCaster,
         ));
     });

@@ -36,6 +36,8 @@ fn setup(
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
         base_color: Srgba::hex("#668855").unwrap().into(),
+        perceptual_roughness: 0.2,
+        reflectance: 0.0,
         ..default()
     }));
 
@@ -57,7 +59,8 @@ fn setup(
                 pos[2] as f64 / 300.0
             ]);
             let d = dist(0 as f64, 0 as f64, pos[0] as f64, pos[2] as f64);
-            pos[1] = if d < 100.0 {0.0 as f32} else {val as f32 * terrain_height};
+            let mult = ((d - 100.0) / 50.0).clamp(0.0, 1.0);
+            pos[1] = (val * mult) as f32 * terrain_height;
         }
         terrain.compute_normals();
     }
