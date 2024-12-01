@@ -36,7 +36,7 @@ fn spawn_person(
     let event = trigger.event();
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
-        base_color: Srgba::hex("#660055").unwrap().into(),
+        base_color: Srgba::hex("#FF9E78").unwrap().into(),
         ..default()
     }));
 

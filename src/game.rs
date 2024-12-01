@@ -58,7 +58,8 @@ fn ray_cast_system(
     mut commands: Commands,
 ) {
     let (transform, global_transform) = cam.single();
-    let ray = Ray3d::new(transform.translation, global_transform.forward());
+    let pos = transform.translation;
+    let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
 
     let filter = |entity| query.contains(entity);
     let early_exit_test = |_entity| false;

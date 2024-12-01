@@ -26,7 +26,7 @@ fn setup(
 ) {
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
-        base_color: Srgba::hex("#ff00ff").unwrap().into(),
+        base_color: Srgba::hex("#443333").unwrap().into(),
         ..default()
     }));
 
@@ -72,9 +72,9 @@ fn setup(
 
         parent.spawn((
             Name::new("Arm"),
-            Mesh3d(meshes.add(Cuboid::new(0.2, 0.2, 0.2))),
+            Mesh3d(meshes.add(Cuboid::new(0.1, 0.1, 0.1))),
             mat,
-            Transform::from_xyz(0.2, 1.4, -5.25),
+            Transform::from_xyz(0.0, 1.4, -5.25),
             NotShadowCaster,
         ));
     });
