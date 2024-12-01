@@ -34,6 +34,11 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>) {
 
+    let mat = MeshMaterial3d(materials.add(StandardMaterial {
+        base_color: Srgba::hex("#668855").unwrap().into(),
+        ..default()
+    }));
+
     let mut terrain = Mesh::from(
         Plane3d::default()
             .mesh()
@@ -59,7 +64,7 @@ fn setup(
 
     commands.spawn((
         Mesh3d(meshes.add(terrain)),
-        MeshMaterial3d(materials.add(Color::WHITE)),
+        mat,
         Terrain
     )); 
 }

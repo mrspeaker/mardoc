@@ -2562,6 +2562,7 @@ name = "mardoc"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_picking",
  "noise",
  "rand",
 ]

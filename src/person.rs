@@ -11,7 +11,10 @@ pub struct SpawnPerson {
 }
 
 #[derive(Component)]
-struct Person;
+pub struct Person;
+
+#[derive(Component)]
+pub struct Pickable;
 
 #[derive(Component)]
 struct Speed(f32);
@@ -33,7 +36,7 @@ fn spawn_person(
     let event = trigger.event();
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
-        base_color: Srgba::hex("#ff00ff").unwrap().into(),
+        base_color: Srgba::hex("#660055").unwrap().into(),
         ..default()
     }));
 
@@ -52,7 +55,8 @@ fn spawn_person(
             Name::new("Body"),
             Mesh3d(meshes.add(Cuboid::new(w, h, 0.5))),
             mat.clone(),
-            Transform::from_xyz(0.0, h/2.0, 0.0)
+            Transform::from_xyz(0.0, h/2.0, 0.0),
+            Pickable
         ));
 
         parent

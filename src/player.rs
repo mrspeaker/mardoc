@@ -1,11 +1,14 @@
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
-use bevy::pbr::NotShadowCaster;
+use bevy::pbr::{NotShadowCaster,VolumetricFog};
 
 pub struct PlayerPlugin;
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
+
+#[derive(Component)]
+pub struct MainCamera;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
@@ -26,24 +29,39 @@ fn setup(
     }));
 
     commands.spawn((
+        Name::new("Liney"),
+        Mesh3d(meshes.add(Cuboid::new(0.1, 0.1, 50.0))),
+        mat.clone(),
+        Transform::from_xyz(0.0, 1.5, -25.0),
+    ));
+
+    commands.spawn((
         Name::new("Player1"),
         Player,
-        Transform::from_xyz(0., 0., 50.0)
+        Transform::from_xyz(0., 0., 0.0),
+        Visibility::Visible
     )).with_children(|parent| {
         parent.spawn((
             Camera3d::default(),
+            Camera {
+                hdr: true,
+                ..default()
+            },
             Transform::from_xyz(0., 1.5, 0.)
                 .looking_at(Vec3::new(0., 1.5, 0.), Vec3::Y),
-        ));
+            MainCamera
+        )).insert(VolumetricFog {
+            ambient_intensity: 0.0,
+            ..default()
+        });
 
         parent.spawn((
             Name::new("Arm"),
             Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.5))),
             mat,
-            Transform::from_xyz(0.2, 0.8, -10.25),
+            Transform::from_xyz(0.2, -0.1, -10.25),
             NotShadowCaster,
         ));
-
     });
 }
 
