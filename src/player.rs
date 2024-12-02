@@ -31,6 +31,14 @@ fn setup(
     }));
 
     commands.spawn((
+        Name::new("Scale"),
+        Mesh3d(meshes.add(Cuboid::new(2.2, 2.2, 0.15))),
+        mat.clone(),
+        Transform::from_xyz(0.0, 1.1, 0.0),
+    ));
+
+
+    commands.spawn((
         Name::new("Liney"),
         Mesh3d(meshes.add(Cuboid::new(0.1, 0.1, 50.0))),
         mat.clone(),
@@ -49,8 +57,8 @@ fn setup(
                 hdr: true,
                 ..default()
             },
-            Transform::from_xyz(0., 1.5, 0.)
-                .looking_at(Vec3::new(0., 1.5, 0.), Vec3::Y),
+            Transform::from_xyz(0., 1.3, 0.)
+                .looking_at(Vec3::new(0., 1.3, 0.), Vec3::Y),
             MainCamera
         )).insert(VolumetricFog {
             ambient_intensity: 0.0,
@@ -86,7 +94,7 @@ fn move_player_view(
 ) {
     let mut transform = player.single_mut();
     for motion in mouse_motion.read() {
-        let yaw = -motion.delta.x * 0.003;
+        let yaw = -motion.delta.x * 0.002;
         let pitch = -motion.delta.y * 0.002;
         // Order of rotations is important, see <https://gamedev.stackexchange.com/a/136175/103059>
         transform.rotate_y(yaw);

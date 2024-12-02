@@ -23,7 +23,7 @@ fn setup(
                     .load(GltfAssetLabel::Scene(0).from_asset("building1.glb"))),
             Transform::from_xyz(0.0, 0.0, 20.0)
                 .with_rotation(Quat::from_rotation_y(PI / 2.))
-                .with_scale(Vec3::splat(2.0))
+                .with_scale(Vec3::splat(1.2))
         ));
 
     commands
@@ -34,7 +34,7 @@ fn setup(
                     .load(GltfAssetLabel::Scene(0).from_asset("building1.glb"))),
             Transform::from_xyz(0.0, 0.0, -60.0)
                 .with_rotation(Quat::from_rotation_y(PI * 1.5))
-                .with_scale(Vec3::splat(2.0))
+                .with_scale(Vec3::splat(1.2))
         ));
 
 }

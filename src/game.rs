@@ -75,7 +75,7 @@ fn ray_cast_system(
         info!("{:?}", hits.len());
         for (e, rmh) in hits.iter() {
             info!("{:?}", rmh.triangle.unwrap());
-            commands.trigger(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 });
+            commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
             //commands.entity(*e).despawn();
             commands.entity(*e).remove::<Pickable>();
         }
@@ -140,7 +140,7 @@ fn tag_gltf_heirachy(
         //info!("i: {}", entity);
         if let Ok((transform, parent, name)) = deets.get(entity) {
             if let Some(name) = name {
-                // info!("n: {} {:?} {:?}", name, parent, transform);
+                //info!("n: {} {:?} {:?}", name, parent, name.starts_with("Cube"));
                 if *name == Name::new("forearm") {
                     commands.entity(entity).insert((Jointy, Timey(0.0)));
                 }
@@ -150,8 +150,14 @@ fn tag_gltf_heirachy(
                 if *name == Name::new("hand") {
                     commands.entity(entity).insert((Jointy, Timey(3.0)));
                 }
+                if *name == Name::new("HandMesh") {
+                    commands.entity(entity).insert(Pickable);
+                }
+                if *name == Name::new("BodyMesh") {
+                    commands.entity(entity).insert(Pickable);
+                }
             } else {
-                // info!("t: {:?}", transform);
+                 //info!("t: {:?}", transform);
             }
         }
     }
