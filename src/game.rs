@@ -62,12 +62,12 @@ fn ray_cast_system(
     let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
 
     let filter = |entity| query.contains(entity);
-    let early_exit_test = |_entity| false;
+//    let early_exit_test = |_entity| false;
     let visibility = RayCastVisibility::Any;
 
     let settings = RayCastSettings::default()
         .with_filter(&filter)
-        .with_early_exit_test(&early_exit_test)
+        //.with_early_exit_test(&early_exit_test)
         .with_visibility(visibility);
 
     let hits = ray_cast.cast_ray(ray, &settings);
