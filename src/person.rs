@@ -1,6 +1,8 @@
 use std::f32::consts::*;
 
 use bevy::prelude::*;
+use crate::game::Timey;
+use crate::bob::Bob;
 
 pub struct PersonPlugin;
 
@@ -53,6 +55,7 @@ fn spawn_person(
         Transform::from_translation(posp),//event.pos),
         Visibility::Visible,
         Person,
+        Bob(0.0),
         Speed(event.speed)
     )).with_children(|parent| {
 
@@ -117,6 +120,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("leg1"),
+                        Timey(0.9),
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
@@ -129,6 +133,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("leg2"),
+                        Timey(9.5),
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),

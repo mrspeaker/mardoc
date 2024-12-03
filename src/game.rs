@@ -4,6 +4,7 @@ use crate::player::{PlayerPlugin,Player};
 use crate::person::{Pickable,PersonPlugin,SpawnPerson};
 use crate::town::TownPlugin;
 use crate::ui::UiPlugin;
+use crate::bob::BobPlugin;
 
 use bevy::pbr::VolumetricLight;
 use bevy::prelude::*;
@@ -25,7 +26,7 @@ struct Jointy;
 struct JointCycle;
 
 #[derive(Component)]
-struct Timey(f32);
+pub struct Timey(pub f32);
 
 #[derive(Component)]
 struct GltfLoaded;
@@ -38,6 +39,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(TerrainPlugin);
         app.add_plugins(TownPlugin);
         app.add_plugins(UiPlugin);
+        app.add_plugins(BobPlugin);
 
         app.add_systems(Startup, (setup_scene, cursor_grab));
         app.add_systems(Update, (
@@ -141,11 +143,21 @@ fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
     children: Query<&Children>,
+    scenes: Query<&Timey, With<SceneRoot>>,
     deets: Query<(&GlobalTransform, &Parent, Option<&Name>)>,
 ) {
     let root = trigger.entity();
 
     commands.entity(root).insert(GltfLoaded);
+
+    let offset: f32 = match scenes.get(root) {
+        Ok(timey) => timey.0,
+        _ => 0.0
+    };
+
+    if let Ok(boop) = scenes.get(root) {
+        println!("----{:?}, {}", boop.0, offset);
+    }
 
     for entity in children.iter_descendants(root) {
         //info!("i: {}", entity);
@@ -170,8 +182,9 @@ fn tag_gltf_heirachy(
                 if *name == Name::new("HeadBone") {
                     commands.entity(entity).insert((JointCycle, Timey(3.0)));
                 }
-                if *name == Name::new("LegLowerBone") {
-                    commands.entity(entity).insert((JointCycle, Timey(3.0)));
+                if offset > 0.0 && *name == Name::new("LegLowerBone") {
+                    info!("off: {}", offset);
+                    commands.entity(entity).insert((JointCycle, Timey(offset)));
                 }
 
             } else {
