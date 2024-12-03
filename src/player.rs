@@ -87,18 +87,23 @@ fn move_player_pos(
 ) {
     let mut transform = player.single_mut();
 
+    let mut sp = 1.0;
+    if input.pressed(KeyCode::ShiftLeft) {
+        sp *= 5.0;
+    }
+
     let mut mo = Vec3::new(0.0, 0.0, 0.0);
     if input.pressed(KeyCode::KeyW) {
-        mo += transform.local_z() * -1.0;
+        mo += transform.local_z() * -sp;
     }
     if input.pressed(KeyCode::KeyS) {
-        mo += transform.local_z() * 1.0;
+        mo += transform.local_z() * sp;
     }
     if input.pressed(KeyCode::KeyA) {
-        mo += transform.local_x() * -1.0;
+        mo += transform.local_x() * -sp;
     }
     if input.pressed(KeyCode::KeyD) {
-        mo += transform.local_x() * 1.0;
+        mo += transform.local_x() * sp;
     }
 
     transform.translation += mo * time.delta_secs() * 8.0;
