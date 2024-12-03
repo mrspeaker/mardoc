@@ -31,22 +31,7 @@ fn setup(
     }));
 
     commands.spawn((
-        Name::new("Scale"),
-        Mesh3d(meshes.add(Cuboid::new(2.2, 2.2, 0.15))),
-        mat.clone(),
-        Transform::from_xyz(0.0, 1.1, 0.0),
-    ));
-
-
-    commands.spawn((
-        Name::new("Liney"),
-        Mesh3d(meshes.add(Cuboid::new(0.1, 0.1, 50.0))),
-        mat.clone(),
-        Transform::from_xyz(0.0, 0.0, -25.0),
-    ));
-
-    commands.spawn((
-        Name::new("Player1"),
+        Name::new("Player"),
         Player,
         Transform::from_xyz(0., 0., 0.0),
         Visibility::Visible
@@ -79,7 +64,7 @@ fn setup(
 
 
         parent.spawn((
-            Name::new("Arm"),
+            Name::new("Crosshair"),
             Mesh3d(meshes.add(Cuboid::new(0.1, 0.1, 0.1))),
             mat,
             Transform::from_xyz(0.0, 1.4, -5.25),
