@@ -56,9 +56,10 @@ fn setup(
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("hand.glb"))),
-                Transform::from_xyz(1.2, 0.5, -2.25)
+                Transform::from_xyz(0.7, 0.8, -1.55)
                     .with_rotation(Quat::from_rotation_y(PI / 1.))
-                    .with_scale(Vec3::splat(1.0))
+                    .with_scale(Vec3::splat(3.0)),
+                NotShadowCaster
 
             ));
 

@@ -107,7 +107,7 @@ fn spawn_person(
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
-                        Transform::from_xyz(0.0, 0.7, 0.0)
+                        Transform::from_xyz(0.0, 0.71, -0.02)
                         //s.with_rotation(Quat::from_rotation_z(PI / 2.))
                         //.with_scale(Vec3::splat(1.5))
                     ));

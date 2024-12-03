@@ -3,6 +3,7 @@ use crate::nim::NimPlugin;
 use crate::player::{PlayerPlugin,Player};
 use crate::person::{Pickable,PersonPlugin,SpawnPerson};
 use crate::town::TownPlugin;
+use crate::ui::UiPlugin;
 
 use bevy::pbr::VolumetricLight;
 use bevy::prelude::*;
@@ -21,6 +22,9 @@ pub struct GamePlugin;
 struct Jointy;
 
 #[derive(Component)]
+struct JointCycle;
+
+#[derive(Component)]
 struct Timey(f32);
 
 #[derive(Component)]
@@ -33,9 +37,16 @@ impl Plugin for GamePlugin {
         app.add_plugins(PersonPlugin);
         app.add_plugins(TerrainPlugin);
         app.add_plugins(TownPlugin);
+        app.add_plugins(UiPlugin);
 
         app.add_systems(Startup, (setup_scene, cursor_grab));
-        app.add_systems(Update, (update_timers, animate_joints, ray_cast_system, exit_system));
+        app.add_systems(Update, (
+            update_timers,
+            animate_joints,
+            animate_joint_cycle,
+            ray_cast_system,
+            exit_system
+        ));
 
         app.add_observer(tag_gltf_heirachy);
     }
@@ -156,6 +167,13 @@ fn tag_gltf_heirachy(
                 if *name == Name::new("BodyMesh") {
                     commands.entity(entity).insert(Pickable);
                 }
+                if *name == Name::new("HeadBone") {
+                    commands.entity(entity).insert((JointCycle, Timey(3.0)));
+                }
+                if *name == Name::new("LegLowerBone") {
+                    commands.entity(entity).insert((JointCycle, Timey(3.0)));
+                }
+
             } else {
                  //info!("t: {:?}", transform);
             }
@@ -175,3 +193,13 @@ fn animate_joints(
     }
 }
 
+fn animate_joint_cycle(
+    mut joints: Query<(&mut Transform, &Timey), With<JointCycle>>,
+) {
+    for (mut t, timey) in joints.iter_mut() {
+        let sec = timey.0 * 5.5;
+        t.rotation =
+            Quat::from_rotation_x(FRAC_PI_2 * sec.sin() * 0.5)
+            .normalize() * 1.0;
+    }
+}

@@ -4,6 +4,7 @@ pub mod nim;
 pub mod person;
 pub mod player;
 pub mod town;
+pub mod ui;
 
 use bevy::prelude::*;
 
