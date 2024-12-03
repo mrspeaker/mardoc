@@ -13,7 +13,7 @@ pub struct MainCamera;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (setup, spawn_crosshair_system));
+        app.add_systems(Startup, setup);
         app.add_systems(Update, (move_player_pos, move_player_view));
     }
 }
@@ -103,23 +103,4 @@ fn move_player_pos(
 
     transform.translation += mo * time.delta_secs() * 8.0;
     transform.translation.y = 0.0; // Force to ground
-}
-
-fn spawn_crosshair_system(mut commands: Commands) {
-    commands.spawn((
-        Node {
-            width: Val::Px(4.0),
-            height: Val::Px(4.0),
-            position_type: PositionType::Absolute,
-            left: Val::Percent(50.0),
-            top: Val::Percent(50.0),
-            margin: UiRect {
-                left: Val::Px(-5.0), // Offset to center
-                top: Val::Px(-5.0),
-                ..default()
-            },
-            ..default()
-        },
-        BackgroundColor(Color::BLACK),
-    ));
 }
