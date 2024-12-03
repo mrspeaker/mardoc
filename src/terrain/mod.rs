@@ -59,7 +59,7 @@ fn setup(
                 pos[2] as f64 / 300.0
             ]);
             let d = dist(0 as f64, 0 as f64, pos[0] as f64, pos[2] as f64);
-            let mult = ((d - 100.0) / 50.0).clamp(0.0, 1.0);
+            let mult = ((d - 50.0) / 50.0).clamp(0.0, 1.0);
             pos[1] = (val * mult) as f32 * terrain_height;
         }
         terrain.compute_normals();

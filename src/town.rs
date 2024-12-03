@@ -1,3 +1,5 @@
+use crate::terrain::TerrainPlugin;
+
 use std::f32::consts::*;
 
 use bevy::prelude::*;
@@ -6,6 +8,7 @@ pub struct TownPlugin;
 
 impl Plugin for TownPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(TerrainPlugin);
         app.add_systems(Startup, setup);
     }
 }

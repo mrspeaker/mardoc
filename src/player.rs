@@ -33,7 +33,7 @@ fn setup(
     commands.spawn((
         Name::new("Player"),
         Player,
-        Transform::from_xyz(0., 0., 0.0),
+        Transform::from_xyz(0., 0., 25.0),
         Visibility::Visible
     )).with_children(|parent| {
         parent.spawn((

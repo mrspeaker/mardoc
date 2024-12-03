@@ -78,7 +78,7 @@ fn spawn_person(
                         .load(GltfAssetLabel::Scene(0).from_asset("body.glb"))),
                 Transform::from_xyz(0.0, h * 0.4, 0.0)
                     //.with_rotation(Quat::from_rotation_z(PI / 2.))
-                    .with_scale(Vec3::splat(1.0))
+                    .with_scale(Vec3::splat(1.6))
 
             )).with_children(|body_parent| {
                 body_parent
@@ -110,7 +110,7 @@ fn spawn_person(
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
-                        Transform::from_xyz(0.0, 0.71, -0.02)
+                        Transform::from_xyz(0.0, 0.71, -0.01)
                         //s.with_rotation(Quat::from_rotation_z(PI / 2.))
                         //.with_scale(Vec3::splat(1.5))
                     ));
