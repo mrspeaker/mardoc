@@ -73,36 +73,74 @@ fn spawn_person(
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("body.glb"))),
-                Transform::from_xyz(0.0, h * 0.0, 0.0)
+                Transform::from_xyz(0.0, h * 0.4, 0.0)
                     //.with_rotation(Quat::from_rotation_z(PI / 2.))
-                    .with_scale(Vec3::splat(2.0))
+                    .with_scale(Vec3::splat(1.0))
 
-            ));
+            )).with_children(|body_parent| {
+                body_parent
+                    .spawn((
+                        Name::new("Arm1"),
+                        SceneRoot(
+                            asset_server
+                                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
+                        Transform::from_xyz(-0.1, 0.6, 0.0)
+                            .with_rotation(Quat::from_rotation_z(PI / 2.))
+                            .with_scale(Vec3::splat(1.0))
+
+                    ));
+
+                body_parent
+                    .spawn((
+                        Name::new("Arm2"),
+                        SceneRoot(
+                            asset_server
+                                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
+                        Transform::from_xyz(0.1, 0.6, 0.0)
+                            .with_rotation(Quat::from_euler(EulerRot::YXZ, 0.0, 0., -PI / 2.))
+                            .with_scale(Vec3::splat(1.0))
+                    ));
+
+                body_parent
+                    .spawn((
+                        Name::new("head"),
+                        SceneRoot(
+                            asset_server
+                                .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
+                        Transform::from_xyz(0.0, 0.7, 0.0)
+                        //s.with_rotation(Quat::from_rotation_z(PI / 2.))
+                        //.with_scale(Vec3::splat(1.5))
+                    ));
 
 
 
-        parent
-            .spawn((
-                Name::new("Arm1"),
-                SceneRoot(
-                    asset_server
-                        .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-                Transform::from_xyz(-w/4.0, h * 0.75, 0.0)
-                    .with_rotation(Quat::from_rotation_z(PI / 2.))
-                    .with_scale(Vec3::splat(1.5))
+                body_parent
+                    .spawn((
+                        Name::new("leg1"),
+                        SceneRoot(
+                            asset_server
+                                .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
+                        Transform::from_xyz(-0.1, h * 0.1, 0.0)
+                        //.with_rotation(Quat::from_rotation_x(PI / 2.))
+                            .with_scale(Vec3::splat(1.0))
 
-            ));
+                    ));
 
-        parent
-            .spawn((
-                Name::new("Arm2"),
-                SceneRoot(
-                    asset_server
-                        .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-                Transform::from_xyz(w/4.0, h*0.75, 0.0)
-                    .with_rotation(Quat::from_euler(EulerRot::YXZ, 0.0, 0., -PI / 2.))
-                    .with_scale(Vec3::splat(1.5))
-            ));
+                body_parent
+                    .spawn((
+                        Name::new("leg2"),
+                        SceneRoot(
+                            asset_server
+                                .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
+                        Transform::from_xyz(0.1, h * 0.1, 0.0)
+                        //.with_rotation(Quat::from_rotation_x(-PI / 2.))
+                            .with_scale(Vec3::splat(1.0))
+
+                    ));
+
+
+            });
+
     }).id();
 
     if let Some(_e) = commands.get_entity(id) {

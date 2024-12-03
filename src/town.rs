@@ -47,9 +47,9 @@ fn setup(
 
     commands.spawn((
         Name::new("Scale"),
-        Mesh3d(meshes.add(Cuboid::new(2.2, 2.2, 0.15))),
+        Mesh3d(meshes.add(Cuboid::new(2.5, 2.5, 0.2))),
         mat.clone(),
-        Transform::from_xyz(0.0, 1.1, 0.0),
+        Transform::from_xyz(0.0, 1.25, 0.0),
     ));
 
     commands.spawn((
