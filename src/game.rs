@@ -5,7 +5,6 @@ use crate::town::TownPlugin;
 use crate::ui::UiPlugin;
 use crate::bob::BobPlugin;
 
-use bevy::pbr::VolumetricLight;
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
 use bevy::app::AppExit;
@@ -121,7 +120,6 @@ fn setup_scene(
             shadows_enabled: true,
             ..default()
         },
-        VolumetricLight,
         Transform::from_xyz(0.0, 10.0, 0.0)
             .with_rotation(Quat::from_rotation_x(-PI / 4.))
     ));

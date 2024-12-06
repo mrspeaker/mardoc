@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
-use bevy::pbr::{NotShadowCaster,VolumetricFog};
+use bevy::pbr::NotShadowCaster;
 use std::f32::consts::*;
 
 pub struct PlayerPlugin;
@@ -45,10 +45,7 @@ fn setup(
             Transform::from_xyz(0., 1.5, 0.)
                 .looking_at(Vec3::new(0., 1.5, -1.0), Vec3::Y),
             MainCamera
-        )).insert(VolumetricFog {
-            ambient_intensity: 0.0,
-            ..default()
-        });
+        ));
 
         parent
             .spawn((
