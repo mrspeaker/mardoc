@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
 use bevy::pbr::NotShadowCaster;
 use std::f32::consts::*;
-
+use crate::inventory::{Inventory,ItemStack,ItemId};
 pub struct PlayerPlugin;
 
 #[derive(Component)]
@@ -30,11 +30,25 @@ fn setup(
         ..default()
     }));
 
+    let mut inv = Inventory::new();
+    inv.add_item(ItemStack::test());
+    inv.add_item(ItemStack {
+        item_id: ItemId::Head,
+        item_type: ItemId::Head.get_default_type(),
+        num: 1
+    });
+    inv.add_item(ItemStack {
+        item_id: ItemId::Apple,
+        item_type: ItemId::Apple.get_default_type(),
+        num: 1
+    });
+
     commands.spawn((
         Name::new("Player"),
         Player,
         Transform::from_xyz(0., 0., 25.0),
-        Visibility::Visible
+        Visibility::Visible,
+        inv
     )).with_children(|parent| {
         parent.spawn((
             Camera3d::default(),
@@ -61,6 +75,8 @@ fn setup(
             ));
 
     });
+
+
 }
 
 fn move_player_view(

@@ -6,6 +6,7 @@ pub mod player;
 pub mod town;
 pub mod ui;
 pub mod bob;
+pub mod inventory;
 
 use bevy::prelude::*;
 
