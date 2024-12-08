@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
-use bevy::pbr::NotShadowCaster;
+use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
 use crate::inventory::{Inventory,ItemStack,ItemId};
 use crate::person::{Pickable,SpawnPerson};
@@ -13,6 +13,9 @@ pub struct Player;
 
 #[derive(Component)]
 pub struct MainCamera;
+
+#[derive(Component)]
+pub struct ToolViz;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
@@ -95,21 +98,8 @@ fn setup(
 
         parent
             .spawn((
-                Name::new("Cleaver"),
-                SceneRoot(
-                    asset_server
-                        .load(GltfAssetLabel::Scene(0).from_asset("cleaver.glb"))),
-                Transform::from_xyz(0.65, 0.8, -1.75)
-                    .with_rotation(Quat::from_euler(EulerRot::YXZ, -PI/2.5, 0., -PI / 2.))
-                    .with_scale(Vec3::splat(2.0)),
-                NotShadowCaster
-
-            ));
-
-
-        parent
-            .spawn((
                 Name::new("Hand"),
+                ToolViz,
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("hand.glb"))),
@@ -119,6 +109,36 @@ fn setup(
                 NotShadowCaster
 
             ));
+
+        parent
+            .spawn((
+                Name::new("Cleaver"),
+                ToolViz,
+                SceneRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("cleaver.glb"))),
+                Transform::from_xyz(0.65, 0.8, -1.75)
+                    .with_rotation(Quat::from_euler(EulerRot::YXZ, -PI/2.5, 0., -PI / 2.))
+                    .with_scale(Vec3::splat(2.0)),
+                NotShadowCaster,
+                Visibility::Hidden
+            ));
+
+        parent
+            .spawn((
+                Name::new("Gun"),
+                ToolViz,
+                SceneRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("gun.glb"))),
+                Transform::from_xyz(0.65, 0.8, -1.75)
+                    .with_rotation(Quat::from_euler(EulerRot::XYZ, 0.0, -PI/2.5, 0.))
+                    .with_scale(Vec3::splat(2.0)),
+                NotShadowCaster,
+                NotShadowReceiver,
+                Visibility::Hidden
+            ));
+
 
     });
 

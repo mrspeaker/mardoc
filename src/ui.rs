@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::player::Player;
+use crate::player::{Player,ToolViz};
 use crate::inventory::{Inventory,ItemId};
 use bevy::input::mouse::MouseWheel;
 
@@ -128,35 +128,55 @@ fn update_slot_ui(
 
 fn scroll_hotbar(
     mut evr_scroll: EventReader<MouseWheel>,
-    mut hotbar: Query<&mut HotbarSelected>
+    mut hotbar: Query<&mut HotbarSelected>,
+    mut tools: Query<(&mut Visibility, &Name), With<ToolViz>>
 ) {
     let mut selected = hotbar.single_mut();
 
     use bevy::input::mouse::MouseScrollUnit;
+    let mut yo = 0;
     for ev in evr_scroll.read() {
         match ev.unit {
             MouseScrollUnit::Line => {
-                let cur = selected.0;
-                let mut next = cur;
-                let b = (-1.0 * ev.y.signum()) as i32;
-                if b > 0 {
-                    if cur < 4 {
-                        next = cur + 1;
-                    } else {
-                        next = 0;
-                    }
-                } else if b < 0 {
-                    if cur > 0 {
-                        next = cur - 1;
-                    } else {
-                        next = 4;
-                    }
-                }
-                selected.0 = next;
+                yo = (-1.0 * ev.y.signum()) as i32;
             }
             MouseScrollUnit::Pixel => {
-                println!("Scroll (pixel units): vertical: {}, horizontal: {}", ev.y, ev.x);
+                yo = (-1.0 * ev.y.signum()) as i32;
             }
         }
     }
+
+    if yo == 0 { return };
+    let cur = selected.0;
+    let mut next = cur;
+    if yo > 0 {
+        if cur < 4 {
+            next = cur + 1;
+        } else {
+            next = 0;
+        }
+    } else if yo < 0 {
+        if cur > 0 {
+            next = cur - 1;
+        } else {
+            next = 4;
+        }
+    }
+    selected.0 = next;
+    if next != cur {
+        // switch tool viz
+        for (mut vis, name) in tools.iter_mut() {
+            *vis = Visibility::Hidden;
+            if name.starts_with("Hand") && next != 1 && next != 2 {
+                *vis = Visibility::Visible;
+            }
+            if name.starts_with("Cleaver") && next == 1 {
+                *vis = Visibility::Visible;
+            }
+            if name.starts_with("Gun") && next == 2 {
+                *vis = Visibility::Visible;
+            }
+        }
+    }
+
 }
