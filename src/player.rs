@@ -3,6 +3,9 @@ use bevy::input::mouse::MouseMotion;
 use bevy::pbr::NotShadowCaster;
 use std::f32::consts::*;
 use crate::inventory::{Inventory,ItemStack,ItemId};
+use crate::person::{Pickable,SpawnPerson};
+use crate::ui::HotbarSelected;
+
 pub struct PlayerPlugin;
 
 #[derive(Component)]
@@ -14,9 +17,16 @@ pub struct MainCamera;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_systems(Update, (move_player_pos, move_player_view));
+        app.add_systems(Update, (
+            ray_cast_system,
+            move_player_pos,
+            move_player_view
+        ));
     }
 }
+
+#[derive(Component)]
+struct Cursor;
 
 fn setup(
     mut commands: Commands,
@@ -30,16 +40,38 @@ fn setup(
         ..default()
     }));
 
+    commands.spawn((
+        Name::new("Cursor"),
+        Mesh3d(meshes.add(Cuboid::new(0.2, 0.2, 0.2))),
+        mat.clone(),
+        Transform::from_xyz(0.0, 0.0, 0.0),
+        Cursor
+    ));
+
     let mut inv = Inventory::new();
-    inv.add_item(ItemStack::test());
+    inv.add_item(ItemStack {
+        item_id: ItemId::Fist,
+        item_type: ItemId::Fist.get_default_type(),
+        num: 1
+    });
+    inv.add_item(ItemStack {
+        item_id: ItemId::Sword,
+        item_type: ItemId::Sword.get_default_type(),
+        num: 1
+    });
+    inv.add_item(ItemStack {
+        item_id: ItemId::Cloner,
+        item_type: ItemId::Cloner.get_default_type(),
+        num: 1
+    });
     inv.add_item(ItemStack {
         item_id: ItemId::Head,
         item_type: ItemId::Head.get_default_type(),
         num: 1
     });
     inv.add_item(ItemStack {
-        item_id: ItemId::Apple,
-        item_type: ItemId::Apple.get_default_type(),
+        item_id: ItemId::Leg,
+        item_type: ItemId::Leg.get_default_type(),
         num: 1
     });
 
@@ -60,6 +92,20 @@ fn setup(
                 .looking_at(Vec3::new(0., 1.5, -1.0), Vec3::Y),
             MainCamera
         ));
+
+        parent
+            .spawn((
+                Name::new("Cleaver"),
+                SceneRoot(
+                    asset_server
+                        .load(GltfAssetLabel::Scene(0).from_asset("cleaver.glb"))),
+                Transform::from_xyz(0.65, 0.8, -1.75)
+                    .with_rotation(Quat::from_euler(EulerRot::YXZ, -PI/2.5, 0., -PI / 2.))
+                    .with_scale(Vec3::splat(2.0)),
+                NotShadowCaster
+
+            ));
+
 
         parent
             .spawn((
@@ -85,8 +131,8 @@ fn move_player_view(
 ) {
     let mut transform = player.single_mut();
     for motion in mouse_motion.read() {
-        let yaw = -motion.delta.x * 0.002;
-        let pitch = -motion.delta.y * 0.002;
+        let yaw = -motion.delta.x * 0.001;
+        let pitch = -motion.delta.y * 0.001;
         // Order of rotations is important, see <https://gamedev.stackexchange.com/a/136175/103059>
         transform.rotate_y(yaw);
         transform.rotate_local_x(pitch);
@@ -121,4 +167,57 @@ fn move_player_pos(
 
     transform.translation += mo * time.delta_secs() * 8.0;
     transform.translation.y = 0.0; // Force to ground
+}
+
+fn ray_cast_system(
+    mut commands: Commands,
+    mut ray_cast: MeshRayCast,
+    cam: Query<(&Transform, &GlobalTransform), With<Player>>,
+    buttons: Res<ButtonInput<MouseButton>>,
+    query: Query<(), With<Pickable>>,
+    hotbar: Query<&HotbarSelected>,
+    inv: Query<&Inventory, With<Player>>,
+    mut cursor: Query<&mut Transform, (With<Cursor>, Without<Player>)>
+) {
+    let selected = hotbar.single().0;
+    let inv_player = inv.single();
+    let tool = inv_player.map.get(&selected);
+
+    let mut cursor_transform = cursor.single_mut();
+
+    let (transform, global_transform) = cam.single();
+    let pos = transform.translation;
+    let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
+
+    let filter = |entity| query.contains(entity);
+//    let early_exit_test = |_entity| false;
+
+    let settings = RayCastSettings::default()
+        .with_filter(&filter);
+        //.with_early_exit_test(&early_exit_test)
+
+    let hits = ray_cast.cast_ray(ray, &settings);
+
+    if hits.len() == 0 {
+        cursor_transform.translation.y = -10.0;
+        return;
+    }
+
+    for (e, rmh) in hits.iter() {
+        cursor_transform.translation = rmh.point;//rmh.triangle.unwrap()[0];
+
+        if buttons.just_pressed(MouseButton::Left) {
+            let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
+            info!("{:?} {:?}", hits.len(), tool_id);
+            info!("{:?}", rmh.triangle.unwrap());
+            if tool_id == ItemId::Cloner {
+                info!("{:?}", rmh.triangle.unwrap());
+                //commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
+                commands.trigger_targets(SpawnPerson { pos:rmh.point, speed: 0.0 }, *e);
+                commands.entity(*e).remove::<Pickable>();
+            } else if tool_id == ItemId::Sword {
+                commands.entity(*e).despawn_recursive();
+            }
+        }
+    }
 }

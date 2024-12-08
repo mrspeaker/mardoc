@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::player::Player;
-use crate::inventory::Inventory;
+use crate::inventory::{Inventory,ItemId};
 use bevy::input::mouse::MouseWheel;
 
 #[derive(Component)]
@@ -10,7 +10,7 @@ struct Ui;
 struct SlotId(u32);
 
 #[derive(Component)]
-pub struct HotbarSelected(u32);
+pub struct HotbarSelected(pub u32);
 
 pub struct UiPlugin;
 
@@ -113,9 +113,10 @@ fn update_slot_ui(
     let selected = hotbar.single().0;
 
     for (slot, mut text, mut bg) in slots.iter_mut() {
-        **text = format!("n:{}", match inv_player.map.get(&slot.0) {
+        let sm = inv_player.map.get(&slot.0);
+        **text = format!("{:?} {}", sm.map(|s| s.item_id).unwrap_or(ItemId::Fist), match sm {
             Some(&s) => s.num,
-            _ => 0
+            _=> 0
         });
         bg.0 = Srgba::hex("#555555").unwrap().into();
         if slot.0 == selected {

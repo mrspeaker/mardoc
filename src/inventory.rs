@@ -10,12 +10,20 @@ pub enum BodyPartType {
     Arm,
 }
 
+/// Type of tool
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ToolType {
+    Fist,
+    Sword,
+    Cloner
+}
+
 /// Type of item
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ItemType {
     Generic,
     BodyPart(BodyPartType),
-    Tool { durability: i16 },
+    Tool(ToolType),
 }
 
 #[derive(
@@ -35,7 +43,10 @@ pub enum ItemId {
     Torso,
     Leg,
     Arm,
-    Apple
+    Apple,
+    Fist,
+    Sword,
+    Cloner
 }
 
 impl ItemId {
@@ -45,7 +56,10 @@ impl ItemId {
             Self::Torso => ItemType::BodyPart(BodyPartType::Torso),
             Self::Arm => ItemType::BodyPart(BodyPartType::Arm),
             Self::Leg => ItemType::BodyPart(BodyPartType::Leg),
-            Self::Apple => ItemType::Generic
+            Self::Apple => ItemType::Generic,
+            Self::Fist => ItemType::Tool(ToolType::Fist),
+            Self::Sword => ItemType::Tool(ToolType::Sword),
+            Self::Cloner => ItemType::Tool(ToolType::Cloner)
         }
     }
 }

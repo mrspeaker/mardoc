@@ -1,5 +1,5 @@
 use crate::nim::NimPlugin;
-use crate::player::{PlayerPlugin,Player};
+use crate::player::PlayerPlugin;
 use crate::person::{Pickable,PersonPlugin,SpawnPerson};
 use crate::town::TownPlugin;
 use crate::ui::UiPlugin;
@@ -43,7 +43,6 @@ impl Plugin for GamePlugin {
             update_timers,
             animate_joints,
             animate_joint_cycle,
-            ray_cast_system,
             exit_system
         ));
 
@@ -58,38 +57,6 @@ fn cursor_grab(
     primary_window.cursor_options.grab_mode = CursorGrabMode::Confined;
     primary_window.cursor_options.grab_mode = CursorGrabMode::Locked;
     primary_window.cursor_options.visible = false;
-}
-
-fn ray_cast_system(
-    mut ray_cast: MeshRayCast,
-    cam: Query<(&Transform, &GlobalTransform), With<Player>>,
-    buttons: Res<ButtonInput<MouseButton>>,
-    query: Query<(), With<Pickable>>,
-    mut commands: Commands,
-) {
-    let (transform, global_transform) = cam.single();
-    let pos = transform.translation;
-    let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
-
-    let filter = |entity| query.contains(entity);
-//    let early_exit_test = |_entity| false;
-    let visibility = RayCastVisibility::Any;
-
-    let settings = RayCastSettings::default()
-        .with_filter(&filter)
-        //.with_early_exit_test(&early_exit_test)
-        .with_visibility(visibility);
-
-    let hits = ray_cast.cast_ray(ray, &settings);
-    if buttons.just_pressed(MouseButton::Left) && hits.len() > 0 {
-        info!("{:?}", hits.len());
-        for (e, rmh) in hits.iter() {
-            info!("{:?}", rmh.triangle.unwrap());
-            commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
-            //commands.entity(*e).despawn();
-            commands.entity(*e).remove::<Pickable>();
-        }
-    }
 }
 
 fn exit_system(
@@ -124,7 +91,7 @@ fn setup_scene(
             .with_rotation(Quat::from_rotation_x(-PI / 4.))
     ));
 
-    ambient_light.brightness = 800.0;
+    ambient_light.brightness = 500.0;
 
     let mut rng = rand::thread_rng();
     let half = 40.0;
@@ -133,7 +100,6 @@ fn setup_scene(
         commands.trigger(SpawnPerson { pos, speed: rng.gen_range(0.2..1.2) });
     }
 }
-
 
 fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
@@ -169,17 +135,20 @@ fn tag_gltf_heirachy(
                 if *name == Name::new("hand") {
                     commands.entity(entity).insert((Jointy, Timey(3.0)));
                 }
+                if name.ends_with("Mesh") {
+                    commands.entity(entity).insert(Pickable);
+                }
+                /*
                 if *name == Name::new("HandMesh") {
                     commands.entity(entity).insert(Pickable);
                 }
                 if *name == Name::new("BodyMesh") {
                     commands.entity(entity).insert(Pickable);
-                }
+                }*/
                 if *name == Name::new("HeadBone") {
-                    commands.entity(entity).insert((JointCycle, Timey(3.0)));
+                    commands.entity(entity).insert((JointCycle, Timey(3.0), Pickable));
                 }
                 if offset > 0.0 && *name == Name::new("LegLowerBone") {
-                    info!("off: {}", offset);
                     commands.entity(entity).insert((JointCycle, Timey(offset)));
                 }
 
@@ -198,7 +167,7 @@ fn animate_joints(
         t.rotation =
             Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
             .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
-            .normalize() * 2.0;
+            .normalize() * 1.0;
     }
 }
 
