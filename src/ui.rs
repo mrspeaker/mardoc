@@ -12,6 +12,10 @@ struct SlotId(u32);
 #[derive(Component)]
 pub struct HotbarSelected(pub u32);
 
+
+#[derive(Debug, Event)]
+pub struct SelectSlot(u32);
+
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

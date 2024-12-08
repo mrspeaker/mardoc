@@ -117,7 +117,7 @@ fn setup(
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("cleaver.glb"))),
-                Transform::from_xyz(0.65, 0.8, -1.75)
+                Transform::from_xyz(0.65, 0.7, -1.75)
                     .with_rotation(Quat::from_euler(EulerRot::YXZ, -PI/2.5, 0., -PI / 2.))
                     .with_scale(Vec3::splat(2.0)),
                 NotShadowCaster,
@@ -131,7 +131,7 @@ fn setup(
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("gun.glb"))),
-                Transform::from_xyz(0.65, 0.8, -1.75)
+                Transform::from_xyz(0.65, 0.6, -1.75)
                     .with_rotation(Quat::from_euler(EulerRot::XYZ, 0.0, -PI/2.5, 0.))
                     .with_scale(Vec3::splat(2.0)),
                 NotShadowCaster,
