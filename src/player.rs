@@ -197,7 +197,7 @@ fn ray_cast_forward(
     mut ray_cast: MeshRayCast,
     cam: Query<(&Transform, &GlobalTransform), With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
-    query: Query<(), With<Pickable>>,
+    query: Query<&GlobalTransform, With<Pickable>>,
     hotbar: Query<&HotbarSelected>,
     inv: Query<&Inventory, With<Player>>,
     mut cursor: Query<&mut Transform, (With<Cursor>, Without<Player>)>
@@ -233,6 +233,10 @@ fn ray_cast_forward(
             let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
             info!("{:?} {:?}", hits.len(), tool_id);
             info!("{:?}", rmh.triangle.unwrap());
+
+            // Hit position to local space
+            let g = query.get(*e).unwrap().affine().inverse().transform_point3(rmh.point);
+
             if tool_id == ItemId::Cloner {
                 info!("{:?}", rmh.triangle.unwrap());
                 //commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
@@ -244,9 +248,9 @@ fn ray_cast_forward(
                 //
             } else if tool_id == ItemId::Head {
                 // Spawn the thing.
-                commands.trigger_targets(SpawnBodyPart { pos:rmh.point, item_id: ItemId::Head, normal: rmh.normal }, *e);
+                commands.trigger_targets(SpawnBodyPart { pos:g, item_id: ItemId::Head, normal: rmh.normal }, *e);
             } else if tool_id == ItemId::Leg {
-                commands.trigger_targets(SpawnBodyPart { pos:rmh.point, item_id: ItemId::Leg, normal: rmh.normal }, *e);
+                commands.trigger_targets(SpawnBodyPart { pos:g, item_id: ItemId::Leg, normal: rmh.normal }, *e);
             }
         }
     }

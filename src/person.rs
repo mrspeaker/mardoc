@@ -172,48 +172,54 @@ fn spawn_bodypart(
     let item_id = event.item_id;
     let normal = event.normal;
     let posp = if let Some(_e) = commands.get_entity(id) {
-        Vec3::new(0.0, 0.0, 0.0)
+        Vec3::new(0.0, 0.0, 0.0);
+        event.pos
     } else {
        event.pos
     };
 
-    let perp = commands.spawn((
+    //mesh_global_transform.affine().inverse().transform_point3(pt)
+
+    let perp = match item_id {
+        ItemId::Head => {
+            commands
+                .spawn((
+                    Name::new("head"),
+                    Visibility::Visible,
+                    SceneRoot(
+                        asset_server
+                            .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
+                    Transform::from_translation(posp)
+                        .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
+
+                )).id()
+        }
+        _ => {
+            commands
+                .spawn((
+                    Name::new("leg1"),
+                    Timey(0.9),
+                    Visibility::Visible,
+                    SceneRoot(
+                        asset_server
+                            .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
+                    Transform::from_translation(posp)
+                        .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
+
+                )).id()
+        }
+    };
+
+
+   /* let perp = commands.spawn((
         Name::new("Person"),
         Transform::from_translation(posp),
         Visibility::Visible,
         Person,
     )).with_children(|parent| {
 
-        if item_id == ItemId::Head {
-            parent
-                .spawn((
-                    Name::new("head"),
-                    SceneRoot(
-                        asset_server
-                            .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
-                    Transform::from_xyz(0.0, 0.0, 0.0)
-                        .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
-                ));
 
-        }
-
-        if item_id == ItemId::Leg {
-            info!("ye leg");
-            parent
-                .spawn((
-                    Name::new("leg1"),
-                    Timey(0.9),
-                    SceneRoot(
-                        asset_server
-                            .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
-                    Transform::from_xyz(0.0, 0.0, 0.0)
-                    //.with_rotation(Quat::from_rotation_x(PI / 2.))
-                        .with_scale(Vec3::splat(1.0))
-
-                ));
-        }
-
-        /*parent
+        parent
             .spawn((
                 Name::new("BodyOdy"),
                 SceneRoot(
@@ -281,7 +287,7 @@ fn spawn_bodypart(
 
             });
         */
-    }).id();
+    //}).id();
 
     if let Some(_e) = commands.get_entity(id) {
         //commands.entity(e);//.entity.push_children((perp));
