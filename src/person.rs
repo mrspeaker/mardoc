@@ -1,6 +1,7 @@
+use bevy::prelude::*;
+use std::ops::Add;
 use std::f32::consts::*;
 
-use bevy::prelude::*;
 use crate::game::Timey;
 use crate::bob::Bob;
 
@@ -16,6 +17,12 @@ pub struct SpawnPerson {
 pub struct Person;
 
 #[derive(Component)]
+pub struct Jointy;
+
+#[derive(Component)]
+pub struct JointCycle;
+
+#[derive(Component)]
 pub struct Pickable;
 
 #[derive(Component)]
@@ -23,7 +30,11 @@ struct Speed(f32);
 
 impl Plugin for PersonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, move_person);
+        app.add_systems(Update, (
+            move_person,
+            animate_joints,
+            animate_joint_cycle
+        ));
         app.add_observer(spawn_person);
     }
 }
@@ -165,5 +176,28 @@ fn move_person(
         let move_amount = transform.forward() * speed.0 * dt;
         transform.translation += move_amount;
         transform.rotation = transform.rotation.normalize();
+    }
+}
+
+fn animate_joints(
+    mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
+) {
+    for (mut t, timey) in joints.iter_mut() {
+        let sec = timey.0;
+        t.rotation =
+            Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
+            .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
+            .normalize() * 1.0;
+    }
+}
+
+fn animate_joint_cycle(
+    mut joints: Query<(&mut Transform, &Timey), With<JointCycle>>,
+) {
+    for (mut t, timey) in joints.iter_mut() {
+        let sec = timey.0 * 5.5;
+        t.rotation =
+            Quat::from_rotation_x(FRAC_PI_2 * sec.sin() * 0.5)
+            .normalize() * 1.0;
     }
 }

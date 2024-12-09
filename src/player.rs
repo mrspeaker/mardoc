@@ -25,7 +25,7 @@ impl Plugin for PlayerPlugin {
             move_player_pos,
             move_player_view
         ));
-        app.add_observer(hotbar_change_selected);
+        app.add_observer(switch_tool_viz);
     }
 }
 
@@ -243,16 +243,11 @@ fn ray_cast_system(
     }
 }
 
-fn hotbar_change_selected(
+fn switch_tool_viz(
     trigger: Trigger<HotbarChangeSelected>,
-    mut tools: Query<(&mut Visibility, &Name), With<ToolViz>>,
-    /*mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,*/
+    mut tools: Query<(&mut Visibility, &Name), With<ToolViz>>
 ) {
     let next = trigger.event().slot_id;
-    // switch tool viz
     for (mut vis, name) in tools.iter_mut() {
         *vis = Visibility::Hidden;
         if name.starts_with("Hand") && next != 1 && next != 2 {

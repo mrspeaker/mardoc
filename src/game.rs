@@ -1,28 +1,26 @@
-use crate::nim::NimPlugin;
-use crate::player::PlayerPlugin;
-use crate::person::{Pickable,PersonPlugin,SpawnPerson};
-use crate::town::TownPlugin;
-use crate::ui::UiPlugin;
-use crate::bob::BobPlugin;
-use crate::hotbar::HotbarPlugin;
-
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
 use bevy::app::AppExit;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 
 use rand::prelude::*;
-
 use std::f32::consts::*;
-use std::ops::Add;
+
+use crate::nim::NimPlugin;
+use crate::player::PlayerPlugin;
+use crate::person::{
+    Pickable,
+    PersonPlugin,
+    SpawnPerson,
+    Jointy,
+    JointCycle
+};
+use crate::town::TownPlugin;
+use crate::ui::UiPlugin;
+use crate::bob::BobPlugin;
+use crate::hotbar::HotbarPlugin;
 
 pub struct GamePlugin;
-
-#[derive(Component)]
-struct Jointy;
-
-#[derive(Component)]
-struct JointCycle;
 
 #[derive(Component)]
 pub struct Timey(pub f32);
@@ -43,8 +41,6 @@ impl Plugin for GamePlugin {
         app.add_systems(Startup, (setup_scene, cursor_grab));
         app.add_systems(Update, (
             update_timers,
-            animate_joints,
-            animate_joint_cycle,
             exit_system
         ));
 
@@ -158,28 +154,5 @@ fn tag_gltf_heirachy(
                  //info!("t: {:?}", transform);
             }
         }
-    }
-}
-
-fn animate_joints(
-    mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
-) {
-    for (mut t, timey) in joints.iter_mut() {
-        let sec = timey.0;
-        t.rotation =
-            Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
-            .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
-            .normalize() * 1.0;
-    }
-}
-
-fn animate_joint_cycle(
-    mut joints: Query<(&mut Transform, &Timey), With<JointCycle>>,
-) {
-    for (mut t, timey) in joints.iter_mut() {
-        let sec = timey.0 * 5.5;
-        t.rotation =
-            Quat::from_rotation_x(FRAC_PI_2 * sec.sin() * 0.5)
-            .normalize() * 1.0;
     }
 }
