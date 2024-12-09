@@ -2,7 +2,7 @@ use bevy::{prelude::*, render::mesh::VertexAttributeValues};
 use noise::{NoiseFn, Perlin, BasicMulti};
 
 #[derive(Component)]
-struct Terrain;
+pub struct Terrain;
 
 #[derive(Resource)]
 struct GreetTimer(Timer);

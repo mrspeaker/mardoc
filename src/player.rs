@@ -5,6 +5,7 @@ use std::f32::consts::*;
 use crate::inventory::{Inventory,ItemStack,ItemId};
 use crate::person::{Pickable,SpawnPerson};
 use crate::hotbar::{HotbarSelected, HotbarChangeSelected};
+use crate::terrain::Terrain;
 
 pub struct PlayerPlugin;
 
@@ -21,7 +22,8 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
         app.add_systems(Update, (
-            ray_cast_system,
+            ray_cast_forward,
+            ray_cast_down,
             move_player_pos,
             move_player_view
         ));
@@ -187,10 +189,10 @@ fn move_player_pos(
     }
 
     transform.translation += mo * time.delta_secs() * 8.0;
-    transform.translation.y = 0.0; // Force to ground
+    //transform.translation.y = 0.0; // Force to ground
 }
 
-fn ray_cast_system(
+fn ray_cast_forward(
     mut commands: Commands,
     mut ray_cast: MeshRayCast,
     cam: Query<(&Transform, &GlobalTransform), With<Player>>,
@@ -243,6 +245,33 @@ fn ray_cast_system(
     }
 }
 
+fn ray_cast_down(
+    mut ray_cast: MeshRayCast,
+    mut player: Query<(&mut Transform, &GlobalTransform), With<Player>>,
+    query: Query<(), With<Terrain>>,
+) {
+    let (mut transform, global_transform) = player.single_mut();
+    let pos = transform.translation;
+    let ray = Ray3d::new(
+        Vec3::new(pos.x, pos.y+0.8, pos.z),
+        global_transform.down()
+    );
+
+    let filter = |entity| query.contains(entity);
+    let settings = RayCastSettings::default()
+        .with_filter(&filter);
+
+    let hits = ray_cast.cast_ray(ray, &settings);
+    if hits.len() == 0 {
+        transform.translation.y += 0.1;
+        return;
+    }
+    for (_e, rmh) in hits.iter() {
+        transform.translation.y = rmh.point.y+0.1;
+    }
+}
+
+
 fn switch_tool_viz(
     trigger: Trigger<HotbarChangeSelected>,
     mut tools: Query<(&mut Visibility, &Name), With<ToolViz>>
@@ -260,5 +289,4 @@ fn switch_tool_viz(
             *vis = Visibility::Visible;
         }
     }
-
 }

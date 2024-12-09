@@ -19,6 +19,7 @@ use crate::town::TownPlugin;
 use crate::ui::UiPlugin;
 use crate::bob::BobPlugin;
 use crate::hotbar::HotbarPlugin;
+use crate::terrain::Terrain;
 
 pub struct GamePlugin;
 
@@ -136,13 +137,9 @@ fn tag_gltf_heirachy(
                 if name.ends_with("Mesh") {
                     commands.entity(entity).insert(Pickable);
                 }
-                /*
-                if *name == Name::new("HandMesh") {
-                    commands.entity(entity).insert(Pickable);
+                if name.ends_with("Floor") {
+                    commands.entity(entity).insert(Terrain);
                 }
-                if *name == Name::new("BodyMesh") {
-                    commands.entity(entity).insert(Pickable);
-                }*/
                 if *name == Name::new("HeadBone") {
                     commands.entity(entity).insert((JointCycle, Timey(3.0), Pickable));
                 }
