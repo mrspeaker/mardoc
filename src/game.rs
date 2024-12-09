@@ -4,6 +4,7 @@ use crate::person::{Pickable,PersonPlugin,SpawnPerson};
 use crate::town::TownPlugin;
 use crate::ui::UiPlugin;
 use crate::bob::BobPlugin;
+use crate::hotbar::HotbarPlugin;
 
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
@@ -37,6 +38,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(TownPlugin);
         app.add_plugins(UiPlugin);
         app.add_plugins(BobPlugin);
+        app.add_plugins(HotbarPlugin);
 
         app.add_systems(Startup, (setup_scene, cursor_grab));
         app.add_systems(Update, (

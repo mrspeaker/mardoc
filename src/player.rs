@@ -4,7 +4,7 @@ use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
 use crate::inventory::{Inventory,ItemStack,ItemId};
 use crate::person::{Pickable,SpawnPerson};
-use crate::ui::HotbarSelected;
+use crate::hotbar::{HotbarSelected, HotbarChangeSelected};
 
 pub struct PlayerPlugin;
 
@@ -25,6 +25,7 @@ impl Plugin for PlayerPlugin {
             move_player_pos,
             move_player_view
         ));
+        app.add_observer(hotbar_change_selected);
     }
 }
 
@@ -240,4 +241,29 @@ fn ray_cast_system(
             }
         }
     }
+}
+
+fn hotbar_change_selected(
+    trigger: Trigger<HotbarChangeSelected>,
+    mut tools: Query<(&mut Visibility, &Name), With<ToolViz>>,
+    /*mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,*/
+) {
+    let next = trigger.event().slot_id;
+    // switch tool viz
+    for (mut vis, name) in tools.iter_mut() {
+        *vis = Visibility::Hidden;
+        if name.starts_with("Hand") && next != 1 && next != 2 {
+            *vis = Visibility::Visible;
+        }
+        if name.starts_with("Cleaver") && next == 1 {
+            *vis = Visibility::Visible;
+        }
+        if name.starts_with("Gun") && next == 2 {
+            *vis = Visibility::Visible;
+        }
+    }
+
 }

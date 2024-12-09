@@ -7,6 +7,7 @@ pub mod town;
 pub mod ui;
 pub mod bob;
 pub mod inventory;
+pub mod hotbar;
 
 use bevy::prelude::*;
 
