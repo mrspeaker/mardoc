@@ -3,7 +3,7 @@ use bevy::input::mouse::MouseMotion;
 use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
 use crate::inventory::{Inventory,ItemStack,ItemId};
-use crate::person::{Pickable,SpawnPerson};
+use crate::person::{Pickable,SpawnPerson,SpawnBodyPart};
 use crate::hotbar::{HotbarSelected, HotbarChangeSelected};
 use crate::terrain::Terrain;
 
@@ -236,10 +236,17 @@ fn ray_cast_forward(
             if tool_id == ItemId::Cloner {
                 info!("{:?}", rmh.triangle.unwrap());
                 //commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
-                commands.trigger_targets(SpawnPerson { pos:rmh.point, speed: 0.0 }, *e);
+                commands.trigger_targets(SpawnPerson { pos:rmh.point, speed: 0.0, normal: rmh.normal }, *e);
                 commands.entity(*e).remove::<Pickable>();
             } else if tool_id == ItemId::Sword {
                 commands.entity(*e).despawn_recursive();
+            } else if tool_id == ItemId::Fist {
+                //
+            } else if tool_id == ItemId::Head {
+                // Spawn the thing.
+                commands.trigger_targets(SpawnBodyPart { pos:rmh.point, item_id: ItemId::Head, normal: rmh.normal }, *e);
+            } else if tool_id == ItemId::Leg {
+                commands.trigger_targets(SpawnBodyPart { pos:rmh.point, item_id: ItemId::Leg, normal: rmh.normal }, *e);
             }
         }
     }
