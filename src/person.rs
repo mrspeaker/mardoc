@@ -55,6 +55,7 @@ fn spawn_person(
     asset_server: Res<AssetServer>,
 ) {
     let event = trigger.event();
+    let normal = event.normal;
 
     let id = trigger.entity();
 
@@ -66,7 +67,8 @@ fn spawn_person(
 
     let perp = commands.spawn((
         Name::new("Person"),
-        Transform::from_translation(posp),//event.pos),
+        Transform::from_translation(posp)
+            .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z)),
         Visibility::Visible,
         Person,
         Bob(0.0),
@@ -74,7 +76,6 @@ fn spawn_person(
     )).with_children(|parent| {
 
         let h = 1.6;
-        let w = 0.75;
 
         parent
             .spawn((

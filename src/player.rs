@@ -240,7 +240,7 @@ fn ray_cast_forward(
             if tool_id == ItemId::Cloner {
                 info!("{:?}", rmh.triangle.unwrap());
                 //commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
-                commands.trigger_targets(SpawnPerson { pos:rmh.point, speed: 0.0, normal: rmh.normal }, *e);
+                commands.trigger_targets(SpawnPerson { pos:g, speed: 0.0, normal: rmh.normal }, *e);
                 commands.entity(*e).remove::<Pickable>();
             } else if tool_id == ItemId::Sword {
                 commands.entity(*e).despawn_recursive();
