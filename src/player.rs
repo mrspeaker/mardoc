@@ -48,7 +48,7 @@ fn setup(
 
     commands.spawn((
         Name::new("Cursor"),
-        Mesh3d(meshes.add(Cuboid::new(0.2, 0.2, 0.2))),
+        Mesh3d(meshes.add(Cuboid::new(0.05, 0.2, 0.05))),
         mat.clone(),
         Transform::from_xyz(0.0, 0.0, 0.0),
         Cursor
@@ -228,6 +228,7 @@ fn ray_cast_forward(
 
     for (e, rmh) in hits.iter() {
         cursor_transform.translation = rmh.point;//rmh.triangle.unwrap()[0];
+        cursor_transform.rotation = Quat::from_euler(EulerRot::XYZ, rmh.normal.x, rmh.normal.y, rmh.normal.z);
 
         if buttons.just_pressed(MouseButton::Left) {
             let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
@@ -241,8 +242,9 @@ fn ray_cast_forward(
                 info!("{:?}", rmh.triangle.unwrap());
                 //commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
                 commands.trigger_targets(SpawnPerson { pos:g, speed: 0.0, normal: rmh.normal }, *e);
-                commands.entity(*e).remove::<Pickable>();
+                //commands.entity(*e).remove::<Pickable>();
             } else if tool_id == ItemId::Sword {
+                commands.entity(*e).remove_parent();
                 commands.entity(*e).despawn_recursive();
             } else if tool_id == ItemId::Fist {
                 //

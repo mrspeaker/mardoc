@@ -84,8 +84,7 @@ fn spawn_person(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("body.glb"))),
                 Transform::from_xyz(0.0, h * 0.4, 0.0)
-                    //.with_rotation(Quat::from_rotation_z(PI / 2.))
-                    .with_scale(Vec3::splat(1.6))
+                    //.with_scale(Vec3::splat(1.3))
 
             )).with_children(|body_parent| {
                 body_parent
@@ -118,8 +117,6 @@ fn spawn_person(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
                         Transform::from_xyz(0.0, 0.71, -0.01)
-                        //s.with_rotation(Quat::from_rotation_z(PI / 2.))
-                        //.with_scale(Vec3::splat(1.5))
                     ));
 
 
@@ -162,7 +159,6 @@ fn spawn_person(
 }
 
 
-
 fn spawn_bodypart(
     trigger: Trigger<SpawnBodyPart>,
     mut commands: Commands,
@@ -170,16 +166,9 @@ fn spawn_bodypart(
 ) {
     let event = trigger.event();
     let id = trigger.entity();
+    let pos = event.pos;
     let item_id = event.item_id;
     let normal = event.normal;
-    let posp = if let Some(_e) = commands.get_entity(id) {
-        Vec3::new(0.0, 0.0, 0.0);
-        event.pos
-    } else {
-       event.pos
-    };
-
-    //mesh_global_transform.affine().inverse().transform_point3(pt)
 
     let perp = match item_id {
         ItemId::Head => {
@@ -190,7 +179,7 @@ fn spawn_bodypart(
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
-                    Transform::from_translation(posp)
+                    Transform::from_translation(pos)
                         .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 
                 )).id()
@@ -204,94 +193,14 @@ fn spawn_bodypart(
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
-                    Transform::from_translation(posp)
+                    Transform::from_translation(pos)
                         .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 
                 )).id()
         }
     };
 
-
-   /* let perp = commands.spawn((
-        Name::new("Person"),
-        Transform::from_translation(posp),
-        Visibility::Visible,
-        Person,
-    )).with_children(|parent| {
-
-
-        parent
-            .spawn((
-                Name::new("BodyOdy"),
-                SceneRoot(
-                    asset_server
-                        .load(GltfAssetLabel::Scene(0).from_asset("body.glb"))),
-                Transform::from_xyz(0.0, h * 0.4, 0.0)
-                    //.with_rotation(Quat::from_rotation_z(PI / 2.))
-                    .with_scale(Vec3::splat(1.6))
-
-            ));
-
-
-                body_parent
-                    .spawn((
-                        Name::new("Arm1"),
-                        SceneRoot(
-                            asset_server
-                                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-                        Transform::from_xyz(-0.1, 0.6, 0.0)
-                            .with_rotation(Quat::from_rotation_z(PI / 2.))
-                            .with_scale(Vec3::splat(1.0))
-
-                    ));
-
-                body_parent
-                    .spawn((
-                        Name::new("Arm2"),
-                        SceneRoot(
-                            asset_server
-                                .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
-                        Transform::from_xyz(0.1, 0.6, 0.0)
-                            .with_rotation(Quat::from_euler(EulerRot::YXZ, 0.0, 0., -PI / 2.))
-                            .with_scale(Vec3::splat(1.0))
-                    ));
-
-
-
-
-                body_parent
-                    .spawn((
-                        Name::new("leg1"),
-                        Timey(0.9),
-                        SceneRoot(
-                            asset_server
-                                .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
-                        Transform::from_xyz(-0.1, h * 0.1, 0.0)
-                        //.with_rotation(Quat::from_rotation_x(PI / 2.))
-                            .with_scale(Vec3::splat(1.0))
-
-                    ));
-
-                body_parent
-                    .spawn((
-                        Name::new("leg2"),
-                        Timey(9.5),
-                        SceneRoot(
-                            asset_server
-                                .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
-                        Transform::from_xyz(0.1, h * 0.1, 0.0)
-                        //.with_rotation(Quat::from_rotation_x(-PI / 2.))
-                            .with_scale(Vec3::splat(1.0))
-
-                    ));
-
-
-            });
-        */
-    //}).id();
-
     if let Some(_e) = commands.get_entity(id) {
-        //commands.entity(e);//.entity.push_children((perp));
         commands.entity(id).add_child(perp);
     }
 
