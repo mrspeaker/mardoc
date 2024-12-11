@@ -1,4 +1,6 @@
 use crate::terrain::TerrainPlugin;
+use crate::person::Pickable;
+
 use rand::prelude::*;
 
 use std::f32::consts::*;
@@ -74,12 +76,18 @@ fn setup(
 
     }
 
-
-
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
         base_color: Srgba::hex("#443333").unwrap().into(),
         ..default()
     }));
+
+    commands.spawn((
+        Name::new("Test"),
+        Pickable,
+        Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+        mat.clone(),
+        Transform::from_xyz(-5.0, 1.0, 0.0),
+    ));
 
     commands.spawn((
         Name::new("Scale"),

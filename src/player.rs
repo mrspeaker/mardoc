@@ -228,7 +228,9 @@ fn ray_cast_forward(
 
     for (e, rmh) in hits.iter() {
         cursor_transform.translation = rmh.point;//rmh.triangle.unwrap()[0];
+        let ups = rmh.normal * cursor_transform.up();
         cursor_transform.rotation = Quat::from_euler(EulerRot::XYZ, rmh.normal.x, rmh.normal.y, rmh.normal.z);
+        //info!("{:?}", rmh.normal);
 
         if buttons.just_pressed(MouseButton::Left) {
             let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
