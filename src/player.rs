@@ -197,7 +197,7 @@ fn ray_cast_forward(
     mut ray_cast: MeshRayCast,
     cam: Query<(&Transform, &GlobalTransform), With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
-    query: Query<&GlobalTransform, With<Pickable>>,
+    meshes_query: Query<&GlobalTransform, With<Pickable>>,
     hotbar: Query<&HotbarSelected>,
     inv: Query<&Inventory, With<Player>>,
     mut cursor: Query<&mut Transform, (With<Cursor>, Without<Player>)>
@@ -212,7 +212,7 @@ fn ray_cast_forward(
     let pos = transform.translation;
     let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
 
-    let filter = |entity| query.contains(entity);
+    let filter = |entity| meshes_query.contains(entity);
 //    let early_exit_test = |_entity| false;
 
     let settings = RayCastSettings::default()
@@ -228,9 +228,10 @@ fn ray_cast_forward(
 
     for (e, rmh) in hits.iter() {
         cursor_transform.translation = rmh.point;//rmh.triangle.unwrap()[0];
-        let ups = rmh.normal * cursor_transform.up();
-        cursor_transform.rotation = Quat::from_euler(EulerRot::XYZ, rmh.normal.x, rmh.normal.y, rmh.normal.z);
+        //let ups = rmh.normal * cursor_transform.up();
+        //cursor_transform.rotation = Quat::from_euler(EulerRot::XYZ, rmh.normal.x, rmh.normal.y, rmh.normal.z);
         //info!("{:?}", rmh.normal);
+        cursor_transform.look_to(rmh.normal, Dir3::Y);
 
         if buttons.just_pressed(MouseButton::Left) {
             let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
@@ -238,7 +239,7 @@ fn ray_cast_forward(
             info!("{:?}", rmh.triangle.unwrap());
 
             // Hit position to local space
-            let g = query.get(*e).unwrap().affine().inverse().transform_point3(rmh.point);
+            let g = meshes_query.get(*e).unwrap().affine().inverse().transform_point3(rmh.point);
 
             if tool_id == ItemId::Cloner {
                 info!("{:?}", rmh.triangle.unwrap());
