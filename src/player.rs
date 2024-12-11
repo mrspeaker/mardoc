@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::input::mouse::MouseMotion;
+use bevy::input::mouse::{AccumulatedMouseMotion, MouseMotion};
 use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
 use crate::inventory::{Inventory,ItemStack,ItemId};
@@ -94,8 +94,8 @@ fn setup(
                 hdr: true,
                 ..default()
             },
-            Transform::from_xyz(0., 1.5, 0.)
-                .looking_at(Vec3::new(0., 1.5, -1.0), Vec3::Y),
+            Transform::from_xyz(0., 1.5, 0.),
+                //.looking_to(-Dir3::Z, Vec3::Y),
             MainCamera
         ));
 
@@ -149,16 +149,25 @@ fn setup(
 }
 
 fn move_player_view(
-    mut mouse_motion: EventReader<MouseMotion>,
+    accumulated_mouse_motion: Res<AccumulatedMouseMotion>,
     mut player: Query<&mut Transform, With<Player>>,
 ) {
-    let mut transform = player.single_mut();
-    for motion in mouse_motion.read() {
-        let yaw = -motion.delta.x * 0.001;
-        let pitch = -motion.delta.y * 0.001;
-        // Order of rotations is important, see <https://gamedev.stackexchange.com/a/136175/103059>
-        transform.rotate_y(yaw);
-        transform.rotate_local_x(pitch);
+    let Ok(mut transform) = player.get_single_mut() else {
+        return;
+    };
+    let delta = accumulated_mouse_motion.delta;
+
+    if delta != Vec2::ZERO {
+        let delta_yaw = -delta.x * 0.002;
+        let delta_pitch = -delta.y * 0.001;
+
+        let (yaw, pitch, roll) = transform.rotation.to_euler(EulerRot::YXZ);
+        let yaw = yaw + delta_yaw;
+
+        const PITCH_LIMIT: f32 = FRAC_PI_2 - 0.01;
+        let pitch = (pitch + delta_pitch).clamp(-PITCH_LIMIT, PITCH_LIMIT);
+
+        transform.rotation = Quat::from_euler(EulerRot::YXZ, yaw, pitch, roll);
     }
 }
 
@@ -195,7 +204,7 @@ fn move_player_pos(
 fn ray_cast_forward(
     mut commands: Commands,
     mut ray_cast: MeshRayCast,
-    cam: Query<(&Transform, &GlobalTransform), With<Player>>,
+    player_query: Query<(&Transform, &GlobalTransform), With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     meshes_query: Query<&GlobalTransform, With<Pickable>>,
     hotbar: Query<&HotbarSelected>,
@@ -208,7 +217,7 @@ fn ray_cast_forward(
 
     let mut cursor_transform = cursor.single_mut();
 
-    let (transform, global_transform) = cam.single();
+    let (transform, global_transform) = player_query.single();
     let pos = transform.translation;
     let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
 

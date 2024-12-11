@@ -96,7 +96,10 @@ fn setup_scene(
     let half = 40.0;
     for _ in 0..20 {
         let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
-        commands.trigger(SpawnPerson { pos, speed: rng.gen_range(0.2..0.3), normal: Vec3::ZERO });
+        let speed = rng.gen_range(0.2..0.3);
+        let dir = Vec3::new(rng.gen_range(-1.0..1.0), 0.0, rng.gen_range(-1.0..1.0)).normalize();
+        info!("{:?}", dir);
+        commands.trigger(SpawnPerson { pos, speed, normal: dir });
     }
 }
 

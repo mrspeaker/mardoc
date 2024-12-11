@@ -68,7 +68,7 @@ fn spawn_person(
     let perp = commands.spawn((
         Name::new("Person"),
         Transform::from_translation(posp)
-            .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z)),
+            .looking_to(normal, Dir3::Y),
         Visibility::Visible,
         Person,
         Bob(0.0),
@@ -180,7 +180,8 @@ fn spawn_bodypart(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
                     Transform::from_translation(pos)
-                        .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
+                        .looking_to(normal, Dir3::Y)
+                        //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 
                 )).id()
         }
@@ -194,7 +195,8 @@ fn spawn_bodypart(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
                     Transform::from_translation(pos)
-                        .with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
+                        .looking_to(normal, Dir3::Y)
+                        //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 
                 )).id()
         }
