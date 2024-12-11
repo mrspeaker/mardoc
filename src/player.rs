@@ -48,7 +48,7 @@ fn setup(
 
     commands.spawn((
         Name::new("Cursor"),
-        Mesh3d(meshes.add(Cuboid::new(0.05, 0.2, 0.05))),
+        Mesh3d(meshes.add(Cuboid::new(0.02, 0.02, 0.25))),
         mat.clone(),
         Transform::from_xyz(0.0, 0.0, 0.0),
         Cursor
@@ -227,10 +227,9 @@ fn ray_cast_forward(
     }
 
     for (e, rmh) in hits.iter() {
-        cursor_transform.translation = rmh.point;//rmh.triangle.unwrap()[0];
-        //let ups = rmh.normal * cursor_transform.up();
-        //cursor_transform.rotation = Quat::from_euler(EulerRot::XYZ, rmh.normal.x, rmh.normal.y, rmh.normal.z);
-        //info!("{:?}", rmh.normal);
+        cursor_transform.translation = rmh.point;
+        let fwd = cursor_transform.forward();
+        cursor_transform.translation += fwd * 0.125;
         cursor_transform.look_to(rmh.normal, Dir3::Y);
 
         if buttons.just_pressed(MouseButton::Left) {

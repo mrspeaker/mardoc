@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::person::Pickable;
 
 #[derive(Component)]
 struct Nim;
@@ -22,12 +23,14 @@ fn setup(
         Mesh3d(mesh.clone()),
         MeshMaterial3d(materials.add(Color::BLACK)),
         Visibility::Visible,
+        Pickable,
         Nim
     )).with_children(|parent| {
         parent.spawn((
             Mesh3d(mesh),
             MeshMaterial3d(materials.add(Color::hsl(0.0, 0.5, 0.5))),
-            Transform::from_xyz(0.0, 0.0, 1.5)
+            Transform::from_xyz(0.0, 0.0, 1.5),
+            Pickable
         ));
     });
 }

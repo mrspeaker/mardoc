@@ -90,6 +90,15 @@ fn setup(
     ));
 
     commands.spawn((
+        Name::new("Test"),
+        Pickable,
+        Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+        mat.clone(),
+        Transform::from_xyz(-20.0, 1.0, 20.0),
+    ));
+
+
+    commands.spawn((
         Name::new("Scale"),
         Mesh3d(meshes.add(Cuboid::new(2.5, 2.5, 0.2))),
         mat.clone(),
