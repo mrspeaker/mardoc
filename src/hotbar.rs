@@ -7,6 +7,9 @@ use crate::player::Player;
 pub struct HotbarSelected(pub u32);
 
 #[derive(Component)]
+pub struct HotbarScrollAmount(pub f32);
+
+#[derive(Component)]
 pub struct SlotId(pub u32);
 
 #[derive(Debug, Event)]
@@ -31,6 +34,7 @@ fn setup(
     commands.spawn((
         Name::new("Hotbar"),
         HotbarSelected(0),
+        HotbarScrollAmount(0.0),
         Node {
             position_type: PositionType::Absolute,
             left: Val::Percent(50.0),
@@ -75,9 +79,11 @@ fn setup(
 fn scroll_hotbar(
     mut evr_scroll: EventReader<MouseWheel>,
     mut hotbar: Query<&mut HotbarSelected>,
+    mut scroll: Query<&mut HotbarScrollAmount>,
     mut commands: Commands
 ) {
     let mut selected = hotbar.single_mut();
+    let mut scroll = scroll.single_mut();
 
     use bevy::input::mouse::MouseScrollUnit;
     let mut yo = 0;
@@ -87,7 +93,11 @@ fn scroll_hotbar(
                 yo = (-1.0 * ev.y.signum()) as i32;
             }
             MouseScrollUnit::Pixel => {
-                yo = (-1.0 * ev.y.signum()) as i32;
+                scroll.0 += ev.y;
+                if scroll.0.abs() > 50.0 {
+                    yo = (-1.0 * scroll.0.signum()) as i32;
+                    scroll.0 = 0.0;
+                }
             }
         }
     }
