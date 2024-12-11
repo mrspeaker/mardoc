@@ -60,7 +60,8 @@ fn spawn_person(
     let id = trigger.entity();
 
     let posp = if let Some(_e) = commands.get_entity(id) {
-        Vec3::new(0.0, 0.0, 0.0)
+       // Vec3::new(0.0, 0.0, 0.0)
+       event.pos
     } else {
        event.pos
     };

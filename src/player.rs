@@ -236,34 +236,43 @@ fn ray_cast_forward(
     }
 
     for (e, rmh) in hits.iter() {
-        cursor_transform.translation = rmh.point;
+        let world_pos = rmh.point;
+        let normal = rmh.normal;
+
+        // align cube cursor
+        cursor_transform.translation = world_pos;
         let fwd = cursor_transform.forward();
         cursor_transform.translation += fwd * 0.125;
-        cursor_transform.look_to(rmh.normal, Dir3::Y);
+        cursor_transform.look_to(normal, Dir3::Y);
 
+
+        // check for buttons
         if buttons.just_pressed(MouseButton::Left) {
             let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
-            info!("{:?} {:?}", hits.len(), tool_id);
-            info!("{:?}", rmh.triangle.unwrap());
 
             // Hit position to local space
-            let g = meshes_query.get(*e).unwrap().affine().inverse().transform_point3(rmh.point);
+            let mesh_local_pos = meshes_query.get(*e).unwrap().affine().inverse().transform_point3(world_pos);
 
             if tool_id == ItemId::Cloner {
-                info!("{:?}", rmh.triangle.unwrap());
-                //commands.trigger_targets(SpawnPerson { pos:rmh.triangle.unwrap()[0], speed: 0.0 }, *e);
-                commands.trigger_targets(SpawnPerson { pos:g, speed: 0.0, normal: rmh.normal }, *e);
-                //commands.entity(*e).remove::<Pickable>();
-            } else if tool_id == ItemId::Sword {
+                commands.trigger_targets(
+                    SpawnPerson { pos: mesh_local_pos, speed: 0.0, normal },
+                    *e
+                );
+                return;
+            }
+
+            if tool_id == ItemId::Sword {
                 commands.entity(*e).remove_parent();
                 commands.entity(*e).despawn_recursive();
             } else if tool_id == ItemId::Fist {
                 //
             } else if tool_id == ItemId::Head {
                 // Spawn the thing.
-                commands.trigger_targets(SpawnBodyPart { pos:g, item_id: ItemId::Head, normal: rmh.normal }, *e);
+                commands.trigger_targets(
+                    SpawnBodyPart { pos: mesh_local_pos, item_id: ItemId::Head, normal }, *e);
             } else if tool_id == ItemId::Leg {
-                commands.trigger_targets(SpawnBodyPart { pos:g, item_id: ItemId::Leg, normal: rmh.normal }, *e);
+                commands.trigger_targets(
+                    SpawnBodyPart { pos: mesh_local_pos, item_id: ItemId::Leg, normal }, *e);
             }
         }
     }
