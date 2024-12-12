@@ -53,15 +53,28 @@ fn cursor_grab(
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
 ) {
     let mut primary_window = q_windows.single_mut();
-    primary_window.cursor_options.grab_mode = CursorGrabMode::Confined;
+    //primary_window.cursor_options.grab_mode = CursorGrabMode::Confined;
     primary_window.cursor_options.grab_mode = CursorGrabMode::Locked;
     primary_window.cursor_options.visible = false;
 }
 
 fn exit_system(
     mut exit: EventWriter<AppExit>,
-    input: Res<ButtonInput<KeyCode>>
+    input: Res<ButtonInput<KeyCode>>,
+    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
 ) {
+
+    if input.pressed(KeyCode::Tab) {
+        let mut primary_window = q_windows.single_mut();
+        if primary_window.cursor_options.grab_mode == CursorGrabMode::Locked {
+            primary_window.cursor_options.grab_mode = CursorGrabMode::None;
+            primary_window.cursor_options.visible = true;
+        } else {
+            primary_window.cursor_options.grab_mode = CursorGrabMode::Locked;
+            primary_window.cursor_options.visible = false;
+        }
+    }
+
     if input.pressed(KeyCode::Escape) {
         exit.send(AppExit::Success);
     }
