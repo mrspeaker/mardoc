@@ -230,7 +230,7 @@ fn animate_joints(
         t.rotation =
             Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
             .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
-            .normalize() * 1.0;
+            .normalize() * 2.0;
     }
 }
 
@@ -241,6 +241,6 @@ fn animate_joint_cycle(
         let sec = timey.0 * 5.5;
         t.rotation =
             Quat::from_rotation_x(FRAC_PI_2 * sec.sin() * 0.5)
-            .normalize() * 1.0;
+            .normalize() * 1.3;
     }
 }
