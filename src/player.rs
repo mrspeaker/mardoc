@@ -265,7 +265,8 @@ fn ray_cast_forward(
                 commands.entity(*e).remove_parent();
                 commands.entity(*e).despawn_recursive();
             } else if tool_id == ItemId::Fist {
-                //
+                commands.trigger_targets(
+                    SpawnBodyPart { pos: mesh_local_pos, item_id: ItemId::Apple, normal }, *e);
             } else if tool_id == ItemId::Head {
                 // Spawn the thing.
                 commands.trigger_targets(

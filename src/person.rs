@@ -185,8 +185,8 @@ fn spawn_bodypart(
                         //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 
                 )).id()
-        }
-        _ => {
+        },
+        ItemId::Leg => {
             commands
                 .spawn((
                     Name::new("leg1"),
@@ -195,6 +195,21 @@ fn spawn_bodypart(
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
+                    Transform::from_translation(pos)
+                        .looking_to(normal, Dir3::Y)
+                        //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
+
+                )).id()
+        },
+        _ => {
+            commands
+                .spawn((
+                    Name::new("apple"),
+                    Timey(0.9),
+                    Visibility::Visible,
+                    SceneRoot(
+                        asset_server
+                            .load(GltfAssetLabel::Scene(0).from_asset("plinth.glb"))),
                     Transform::from_translation(pos)
                         .looking_to(normal, Dir3::Y)
                         //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
