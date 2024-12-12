@@ -228,9 +228,10 @@ fn animate_joints(
     for (mut t, timey) in joints.iter_mut() {
         let sec = timey.0;
         t.rotation =
-            Quat::from_rotation_y(FRAC_PI_2 * sec.sin() * 0.5)
-            .add(Quat::from_rotation_z(FRAC_PI_2 * sec.cos() * 0.4))
-            .normalize() * 2.0;
+            Quat::from_euler(EulerRot::XYZ,
+                             0.0,
+                             FRAC_PI_2 * sec.sin() * 0.5,
+                             FRAC_PI_2 * sec.cos() * 0.4);
     }
 }
 
@@ -241,6 +242,6 @@ fn animate_joint_cycle(
         let sec = timey.0 * 5.5;
         t.rotation =
             Quat::from_rotation_x(FRAC_PI_2 * sec.sin() * 0.5)
-            .normalize() * 1.3;
+            .normalize() * 1.0;
     }
 }
