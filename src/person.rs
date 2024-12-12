@@ -56,6 +56,7 @@ fn spawn_person(
 ) {
     let event = trigger.event();
     let normal = event.normal;
+    let speed = event.speed;
 
     let id = trigger.entity();
 
@@ -73,7 +74,7 @@ fn spawn_person(
         Visibility::Visible,
         Person,
         Bob(0.0),
-        Speed(event.speed)
+        Speed(speed)
     )).with_children(|parent| {
 
         let h = 1.6;
@@ -116,11 +117,9 @@ fn spawn_person(
                         Name::new("head"),
                         SceneRoot(
                             asset_server
-                                .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
+                                .load(GltfAssetLabel::Scene(0).from_asset(if speed < 0.3 { "head.glb" } else { "serhead.glb"}))),
                         Transform::from_xyz(0.0, 0.71, -0.01)
                     ));
-
-
 
                 body_parent
                     .spawn((
@@ -175,13 +174,14 @@ fn spawn_bodypart(
         ItemId::Head => {
             commands
                 .spawn((
-                    Name::new("head"),
+                    Name::new("serhead"),
                     Visibility::Visible,
                     SceneRoot(
                         asset_server
-                            .load(GltfAssetLabel::Scene(0).from_asset("head.glb"))),
+                            .load(GltfAssetLabel::Scene(0).from_asset("serhead.glb"))),
                     Transform::from_translation(pos)
                         .looking_to(normal, Dir3::Y)
+                        .with_scale(Vec3::splat(1.5))
                         //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 
                 )).id()

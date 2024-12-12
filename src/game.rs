@@ -109,7 +109,7 @@ fn setup_scene(
     let half = 40.0;
     for _ in 0..20 {
         let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
-        let speed = rng.gen_range(0.2..0.3);
+        let speed = rng.gen_range(0.1..0.4);
         let dir = Vec3::new(rng.gen_range(-1.0..1.0), 0.0, rng.gen_range(-1.0..1.0)).normalize();
         info!("{:?}", dir);
         commands.trigger(SpawnPerson { pos, speed, normal: dir });
@@ -159,6 +159,10 @@ fn tag_gltf_heirachy(
                 if *name == Name::new("HeadBone") {
                     commands.entity(entity).insert((JointCycle, Timey(3.0), Pickable));
                 }
+                if *name == Name::new("SerheadBone") {
+                    commands.entity(entity).insert((Jointy, Timey(3.0), Pickable));
+                }
+
                 if offset > 0.0 && *name == Name::new("LegLowerBone") {
                     commands.entity(entity).insert((JointCycle, Timey(offset)));
                 }

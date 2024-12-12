@@ -1,5 +1,6 @@
 use bevy::{prelude::*, render::mesh::VertexAttributeValues};
 use noise::{NoiseFn, Perlin, BasicMulti};
+use crate::person::{Pickable};
 
 #[derive(Component)]
 pub struct Terrain;
@@ -68,6 +69,7 @@ fn setup(
     commands.spawn((
         Mesh3d(meshes.add(terrain)),
         mat,
-        Terrain
+        Terrain,
+        Pickable
     )); 
 }
