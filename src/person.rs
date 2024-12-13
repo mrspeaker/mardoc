@@ -57,15 +57,8 @@ fn spawn_person(
     let event = trigger.event();
     let normal = event.normal;
     let speed = event.speed;
-
+    let posp = event.pos;
     let id = trigger.entity();
-
-    let posp = if let Some(_e) = commands.get_entity(id) {
-       // Vec3::new(0.0, 0.0, 0.0)
-       event.pos
-    } else {
-       event.pos
-    };
 
     let perp = commands.spawn((
         Name::new("Person"),
@@ -163,12 +156,22 @@ fn spawn_bodypart(
     trigger: Trigger<SpawnBodyPart>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    query: Query<&GlobalTransform, With<Parent>>,
 ) {
     let event = trigger.event();
     let id = trigger.entity();
     let pos = event.pos;
     let item_id = event.item_id;
     let normal = event.normal;
+    //let look_t = Transform::IDENTITY.look_to(normal, Dir3::Y);
+    let q = Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z);
+
+    let rotation = match query.get(id) {
+        Ok(t) => t.rotation() + q,
+        _ => q
+    };
+
+    info!("parrr {:?}", rotation);
 
     let perp = match item_id {
         ItemId::Head => {
@@ -180,7 +183,8 @@ fn spawn_bodypart(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("serhead.glb"))),
                     Transform::from_translation(pos)
-                        .looking_to(normal, Dir3::Y)
+                        .with_rotation(rotation)
+                        //.looking_to(normal, Dir3::Y)
                         .with_scale(Vec3::splat(1.5))
                         //.with_rotation(Quat::from_euler(EulerRot::XYZ, normal.x, normal.y, normal.z))
 

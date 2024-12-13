@@ -103,13 +103,13 @@ fn setup_scene(
             .with_rotation(Quat::from_rotation_x(-PI / 4.))
     ));
 
-    ambient_light.brightness = 500.0;
+    ambient_light.brightness = 600.0;
 
     let mut rng = rand::thread_rng();
     let half = 40.0;
     for _ in 0..20 {
         let pos = Vec3::new(rng.gen_range(-half..half), 0.0, rng.gen_range(-half..half));
-        let speed = rng.gen_range(0.1..0.4);
+        let speed = rng.gen_range(0.2..0.4);
         let dir = Vec3::new(rng.gen_range(-1.0..1.0), 0.0, rng.gen_range(-1.0..1.0)).normalize();
         info!("{:?}", dir);
         commands.trigger(SpawnPerson { pos, speed, normal: dir });
