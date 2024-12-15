@@ -19,6 +19,9 @@ pub struct SpawnPerson {
 }
 
 #[derive(Debug, Event)]
+pub struct KillPerson;
+
+#[derive(Debug, Event)]
 pub struct SpawnBodyPart {
     pub pos: Vec3,
     pub item_id: ItemId,
@@ -62,6 +65,7 @@ impl Plugin for PersonPlugin {
             apply_knockback
         ));
         app.add_observer(spawn_person);
+        app.add_observer(kill_person);
         app.add_observer(spawn_bodypart);
         app.add_observer(hit_bodypart);
     }
@@ -280,7 +284,7 @@ fn hit_bodypart(
 
     p.0 -= 25.0;
     if p.0 <= 0.0 {
-        commands.entity(root).despawn_recursive();
+        commands.trigger_targets(KillPerson, root);
     } else {
         commands.entity(root).insert(Knockback {
             dir: Vec3::from(dir) * Vec3::new(1.0, 0.0, 1.0) * power,
@@ -324,4 +328,37 @@ fn apply_knockback(
             t.translation += knock.dir * time.delta_secs();
         }
     }
+}
+
+
+fn kill_person(
+    trigger: Trigger<KillPerson>,
+    persons: Query<&GlobalTransform, With<Person>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    let id = trigger.entity();
+
+    let pos = match persons.get(id) {
+        Ok(t) => t.translation(),
+        _ => Vec3::ZERO
+    };
+    //let Ok(mut p) = persons.get_mut(root) else {
+    //    return;
+    //};
+    //commands.entityx`
+
+    info!("You ded {:?}", pos);
+
+    commands.entity(id).despawn_recursive();
+    commands
+        .spawn((
+            SceneRoot(
+                asset_server
+                    .load(GltfAssetLabel::Scene(0).from_asset("dead.glb"))),
+            Transform::from_xyz(pos.x, pos.y , pos.z)
+            //.with_scale(Vec3::splat(1.3))
+
+        ));
+
 }
