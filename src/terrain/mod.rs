@@ -70,6 +70,5 @@ fn setup(
         Mesh3d(meshes.add(terrain)),
         mat,
         Terrain,
-        Pickable
-    )); 
+    ));
 }

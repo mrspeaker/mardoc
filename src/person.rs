@@ -54,6 +54,9 @@ pub struct JointCycle;
 pub struct Pickable;
 
 #[derive(Component)]
+pub struct Carryable;
+
+#[derive(Component)]
 struct Speed(f32);
 
 impl Plugin for PersonPlugin {
@@ -356,9 +359,8 @@ fn kill_person(
             SceneRoot(
                 asset_server
                     .load(GltfAssetLabel::Scene(0).from_asset("dead.glb"))),
-            Transform::from_xyz(pos.x, pos.y , pos.z)
-            //.with_scale(Vec3::splat(1.3))
-
+            Transform::from_xyz(pos.x, pos.y , pos.z),
+            Carryable
         ));
 
 }

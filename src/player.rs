@@ -19,6 +19,15 @@ pub struct MainCamera;
 #[derive(Component)]
 pub struct ToolViz;
 
+#[derive(Resource)]
+struct RaycastTarget {
+    dir: Dir3,
+    point: Option<Vec3>,
+    normal: Vec3,
+    mesh: Option<Entity>,
+    mesh_point: Vec3
+}
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
@@ -26,7 +35,9 @@ impl Plugin for PlayerPlugin {
             ray_cast_forward,
             ray_cast_down,
             move_player_pos,
-            move_player_view
+            move_player_view,
+            use_tool,
+            cursor_ray_align
         ));
         app.add_observer(switch_tool_viz);
     }
@@ -41,6 +52,14 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
+
+    commands.insert_resource(RaycastTarget {
+        dir: Dir3::Z,
+        point: None,
+        normal: Vec3::ZERO,
+        mesh: None,
+        mesh_point: Vec3::ZERO
+    });
 
     let mat = MeshMaterial3d(materials.add(StandardMaterial {
         base_color: Srgba::hex("#443333").unwrap().into(),
@@ -203,80 +222,41 @@ fn move_player_pos(
 }
 
 fn ray_cast_forward(
-    mut commands: Commands,
     mut ray_cast: MeshRayCast,
     player_query: Query<(&Transform, &GlobalTransform), With<Player>>,
-    buttons: Res<ButtonInput<MouseButton>>,
     meshes_query: Query<&GlobalTransform, With<Pickable>>,
-    hotbar: Query<&HotbarSelected>,
-    inv: Query<&Inventory, With<Player>>,
-    mut cursor: Query<&mut Transform, (With<Cursor>, Without<Player>)>
+    mut ray_target: ResMut<RaycastTarget>,
 ) {
-    let selected = hotbar.single().0;
-    let inv_player = inv.single();
-    let tool = inv_player.map.get(&selected);
-
-    let mut cursor_transform = cursor.single_mut();
-
     let (transform, global_transform) = player_query.single();
     let pos = transform.translation;
     let ray = Ray3d::new(Vec3::new(pos.x, pos.y + 1.5, pos.z),  global_transform.forward());
 
     let filter = |entity| meshes_query.contains(entity);
-//    let early_exit_test = |_entity| false;
+    // let early_exit_test = |_entity| false;
 
     let settings = RayCastSettings::default()
         .with_filter(&filter);
         //.with_early_exit_test(&early_exit_test)
 
+    ray_target.dir = ray.direction;
     let hits = ray_cast.cast_ray(ray, &settings);
 
     if hits.len() == 0 {
-        cursor_transform.translation.y = -10.0;
+        ray_target.point = None;
+        ray_target.mesh = None;
         return;
     }
 
     for (e, rmh) in hits.iter() {
         let world_pos = rmh.point;
         let normal = rmh.normal;
+        // Hit position to local space
+        let mesh_local_pos = meshes_query.get(*e).unwrap().affine().inverse().transform_point3(world_pos);
 
-        // align cube cursor
-        cursor_transform.translation = world_pos;
-        let fwd = cursor_transform.forward();
-        cursor_transform.translation += fwd * 0.125;
-        cursor_transform.look_to(normal, Dir3::Y);
-
-
-        // check for buttons
-        if buttons.just_pressed(MouseButton::Left) {
-            let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
-
-            // Hit position to local space
-            let mesh_local_pos = meshes_query.get(*e).unwrap().affine().inverse().transform_point3(world_pos);
-
-            if tool_id == ItemId::Cloner {
-                commands.trigger_targets(
-                    SpawnPerson { pos: mesh_local_pos, speed: 0.0, normal },
-                    *e
-                );
-                return;
-            }
-
-            if tool_id == ItemId::Sword {
-                commands.entity(*e).remove_parent();
-                commands.entity(*e).despawn_recursive();
-            } else if tool_id == ItemId::Fist {
-                commands.trigger_targets(
-                    HitBodyPart { item_id: ItemId::Apple, dir: ray.direction, power: 20.0 }, *e);
-            } else if tool_id == ItemId::Head {
-                // Spawn the thing.
-                commands.trigger_targets(
-                    SpawnBodyPart { pos: mesh_local_pos, item_id: ItemId::Head, normal }, *e);
-            } else if tool_id == ItemId::Leg {
-                commands.trigger_targets(
-                    SpawnBodyPart { pos: mesh_local_pos, item_id: ItemId::Leg, normal }, *e);
-            }
-        }
+        ray_target.point = Some(world_pos);
+        ray_target.normal = normal;
+        ray_target.mesh = Some(*e);
+        ray_target.mesh_point = mesh_local_pos;
     }
 }
 
@@ -328,4 +308,78 @@ fn switch_tool_viz(
             *vis = Visibility::Visible;
         }
     }
+}
+
+fn cursor_ray_align(
+    ray_target: ResMut<RaycastTarget>,
+    mut cursor: Query<&mut Transform, With<Cursor>>
+) {
+    let mut cursor_transform = cursor.single_mut();
+    if let Some(p) = ray_target.point {
+        cursor_transform.translation = p;
+        let fwd = cursor_transform.forward();
+        cursor_transform.translation += fwd * 0.125;
+        cursor_transform.look_to(ray_target.normal, Dir3::Y);
+    } else {
+        cursor_transform.translation.y = -10.0;
+    }
+}
+
+
+fn use_tool(
+    ray_target: ResMut<RaycastTarget>,
+    hotbar: Query<&HotbarSelected>,
+    buttons: Res<ButtonInput<MouseButton>>,
+    inv: Query<&Inventory, With<Player>>,
+    mut commands: Commands
+
+) {
+    let Some(_point) = ray_target.point else {
+        return;
+    };
+    let Some(mesh) = ray_target.mesh else {
+        return;
+    };
+
+    if !buttons.just_pressed(MouseButton::Left) {
+        return;
+    }
+
+    let selected = hotbar.single().0;
+    let inv_player = inv.single();
+    let tool = inv_player.map.get(&selected);
+    let tool_id = tool.map(|t| t.item_id).unwrap_or(ItemId::Fist);
+
+    let normal = ray_target.normal;
+    let mesh_point = ray_target.mesh_point;
+
+    if tool_id == ItemId::Cloner {
+        commands.trigger_targets(
+            SpawnPerson { pos: mesh_point, speed: 0.0, normal },
+            mesh
+        );
+        return;
+    }
+
+    if tool_id == ItemId::Sword {
+        commands.entity(mesh).remove_parent();
+        commands.entity(mesh).despawn_recursive();
+    } else if tool_id == ItemId::Fist {
+        commands.trigger_targets(
+            HitBodyPart { item_id: ItemId::Apple, dir: ray_target.dir, power: 20.0 },
+            mesh
+        );
+    } else if tool_id == ItemId::Head {
+        // Spawn the thing.
+        commands.trigger_targets(
+            SpawnBodyPart { pos: mesh_point, item_id: ItemId::Head, normal },
+            mesh
+        );
+    } else if tool_id == ItemId::Leg {
+        commands.trigger_targets(
+            SpawnBodyPart { pos: mesh_point, item_id: ItemId::Leg, normal },
+            mesh
+        );
+    }
+
 }
