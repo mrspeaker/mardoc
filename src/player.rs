@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use bevy::input::mouse::{AccumulatedMouseMotion, MouseMotion};
+use bevy::input::mouse::AccumulatedMouseMotion;
 use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
+
 use crate::inventory::{Inventory,ItemStack,ItemId};
-use crate::person::{Pickable,SpawnPerson,SpawnBodyPart};
+use crate::person::{Pickable, SpawnPerson, SpawnBodyPart, HitBodyPart};
 use crate::hotbar::{HotbarSelected, HotbarChangeSelected};
 use crate::terrain::Terrain;
 
@@ -266,7 +267,7 @@ fn ray_cast_forward(
                 commands.entity(*e).despawn_recursive();
             } else if tool_id == ItemId::Fist {
                 commands.trigger_targets(
-                    SpawnBodyPart { pos: mesh_local_pos, item_id: ItemId::Apple, normal }, *e);
+                    HitBodyPart { item_id: ItemId::Apple, dir: ray.direction, power: 20.0 }, *e);
             } else if tool_id == ItemId::Head {
                 // Spawn the thing.
                 commands.trigger_targets(

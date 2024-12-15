@@ -1,12 +1,15 @@
 use bevy::prelude::*;
-use std::ops::Add;
 use std::f32::consts::*;
 
 use crate::game::Timey;
 use crate::bob::Bob;
 use crate::inventory::ItemId;
+use crate::townsfolk::LookingForWork;
 
 pub struct PersonPlugin;
+
+#[derive(Debug, Component)]
+pub struct Health(pub f32);
 
 #[derive(Debug, Event)]
 pub struct SpawnPerson {
@@ -20,6 +23,19 @@ pub struct SpawnBodyPart {
     pub pos: Vec3,
     pub item_id: ItemId,
     pub normal: Vec3
+}
+
+#[derive(Debug, Event)]
+pub struct HitBodyPart {
+    pub item_id: ItemId,
+    pub dir: Dir3,
+    pub power: f32
+}
+
+#[derive(Component)]
+pub struct Knockback {
+    pub dir: Vec3,
+    pub duration: Timer
 }
 
 #[derive(Component)]
@@ -42,10 +58,12 @@ impl Plugin for PersonPlugin {
         app.add_systems(Update, (
             move_person,
             animate_joints,
-            animate_joint_cycle
+            animate_joint_cycle,
+            apply_knockback
         ));
         app.add_observer(spawn_person);
         app.add_observer(spawn_bodypart);
+        app.add_observer(hit_bodypart);
     }
 }
 
@@ -66,7 +84,9 @@ fn spawn_person(
             .looking_to(normal, Dir3::Y),
         Visibility::Visible,
         Person,
+        Health(100.0),
         Bob(0.0),
+        LookingForWork,
         Speed(speed)
     )).with_children(|parent| {
 
@@ -241,6 +261,35 @@ fn move_person(
     }
 }
 
+fn hit_bodypart(
+    trigger: Trigger<HitBodyPart>,
+    parent_q: Query<&Parent>,
+    mut persons: Query<&mut Health, With<Person>>,
+    mut commands: Commands,
+) {
+    let id = trigger.entity();
+
+    let root = parent_q.root_ancestor(id);
+    let Ok(mut p) = persons.get_mut(root) else {
+        return;
+    };
+
+    let event = trigger.event();
+    let dir = event.dir;
+    let power = event.power;
+
+    p.0 -= 25.0;
+    if p.0 <= 0.0 {
+        commands.entity(root).despawn_recursive();
+    } else {
+        commands.entity(root).insert(Knockback {
+            dir: Vec3::from(dir) * Vec3::new(1.0, 0.0, 1.0) * power,
+            duration: Timer::from_seconds(0.2, TimerMode::Once)
+        });
+    }
+
+}
+
 fn animate_joints(
     mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
 ) {
@@ -262,5 +311,17 @@ fn animate_joint_cycle(
         t.rotation =
             Quat::from_rotation_x(FRAC_PI_2 * sec.sin() * 0.5)
             .normalize() * 1.0;
+    }
+}
+
+fn apply_knockback(
+    mut q: Query<(&mut Knockback, &mut Transform)>,
+    time: Res<Time>
+){
+    for (mut knock, mut t) in q.iter_mut() {
+        knock.duration.tick(time.delta());
+        if !knock.duration.finished() {
+            t.translation += knock.dir * time.delta_secs();
+        }
     }
 }

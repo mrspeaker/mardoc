@@ -16,6 +16,7 @@ use crate::person::{
     JointCycle
 };
 use crate::town::TownPlugin;
+use crate::townsfolk::TownsfolkPlugin;
 use crate::ui::UiPlugin;
 use crate::bob::BobPlugin;
 use crate::hotbar::HotbarPlugin;
@@ -35,6 +36,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(PlayerPlugin);
         app.add_plugins(PersonPlugin);
         app.add_plugins(TownPlugin);
+        app.add_plugins(TownsfolkPlugin);
         app.add_plugins(UiPlugin);
         app.add_plugins(BobPlugin);
         app.add_plugins(HotbarPlugin);
@@ -113,6 +115,15 @@ fn setup_scene(
         let dir = Vec3::new(rng.gen_range(-1.0..1.0), 0.0, rng.gen_range(-1.0..1.0)).normalize();
         info!("{:?}", dir);
         commands.trigger(SpawnPerson { pos, speed, normal: dir });
+    }
+}
+
+fn boop(
+    mut commands: Commands,
+    mut meshy: Query<Entity, Added<Mesh3d>>
+){
+    for e in meshy.iter_mut() {
+        commands.entity(e).insert(Pickable);
     }
 }
 
