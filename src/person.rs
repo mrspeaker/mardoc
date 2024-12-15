@@ -268,35 +268,6 @@ fn move_person(
     }
 }
 
-fn hit_bodypart(
-    trigger: Trigger<HitBodyPart>,
-    parent_q: Query<&Parent>,
-    mut persons: Query<&mut Health, With<Person>>,
-    mut commands: Commands,
-) {
-    let id = trigger.entity();
-
-    let root = parent_q.root_ancestor(id);
-    let Ok(mut p) = persons.get_mut(root) else {
-        return;
-    };
-
-    let event = trigger.event();
-    let dir = event.dir;
-    let power = event.power;
-
-    p.0 -= 25.0;
-    if p.0 <= 0.0 {
-        commands.trigger_targets(KillPerson, root);
-    } else {
-        commands.entity(root).insert(Knockback {
-            dir: Vec3::from(dir) * Vec3::new(1.0, 0.0, 1.0) * power,
-            duration: Timer::from_seconds(0.2, TimerMode::Once)
-        });
-    }
-
-}
-
 fn animate_joints(
     mut joints: Query<(&mut Transform, &Timey), With<Jointy>>,
 ) {
@@ -333,6 +304,38 @@ fn apply_knockback(
     }
 }
 
+fn hit_bodypart(
+    trigger: Trigger<HitBodyPart>,
+    parent_q: Query<&Parent>,
+    mut persons: Query<&mut Health, With<Person>>,
+    mut commands: Commands,
+) {
+    let id = trigger.entity();
+
+    let root = parent_q.root_ancestor(id);
+    let Ok(mut p) = persons.get_mut(root) else {
+        return;
+    };
+    if p.0 <= 0.0 {
+        info!("{:?} ded already", p.0);
+        return;
+    }
+
+    let event = trigger.event();
+    let dir = event.dir;
+    let power = event.power;
+
+    p.0 -= 25.0;
+    if p.0 <= 0.0 {
+        commands.trigger_targets(KillPerson, root);
+    } else {
+        commands.entity(root).insert(Knockback {
+            dir: Vec3::from(dir) * Vec3::new(1.0, 0.0, 1.0) * power,
+            duration: Timer::from_seconds(0.2, TimerMode::Once)
+        });
+    }
+
+}
 
 fn kill_person(
     trigger: Trigger<KillPerson>,
@@ -346,10 +349,6 @@ fn kill_person(
         Ok(t) => t.translation(),
         _ => Vec3::ZERO
     };
-    //let Ok(mut p) = persons.get_mut(root) else {
-    //    return;
-    //};
-    //commands.entityx`
 
     info!("You ded {:?}", pos);
 
@@ -360,7 +359,9 @@ fn kill_person(
                 asset_server
                     .load(GltfAssetLabel::Scene(0).from_asset("dead.glb"))),
             Transform::from_xyz(pos.x, pos.y , pos.z),
-            Carryable
+            Carryable,
+            Person,
+            Health(0.0)
         ));
 
 }
