@@ -131,7 +131,7 @@ fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
     children: Query<&Children>,
-    scenes: Query<&Timey, With<SceneRoot>>,
+    scenes: Query<(Option<&Timey>, Option<&Name>), With<SceneRoot>>,
     deets: Query<(&GlobalTransform, &Parent, Option<&Name>)>,
 ) {
     let root = trigger.entity();
@@ -139,13 +139,12 @@ fn tag_gltf_heirachy(
     commands.entity(root).insert(GltfLoaded);
 
     let offset: f32 = match scenes.get(root) {
-        Ok(timey) => timey.0,
+        Ok((timey, name)) => {
+            info!("Scene: {:?}", name.map_or("-",|v|v));
+            timey.map_or(0.0, |Timey(v)| *v)
+        },
         _ => 0.0
     };
-
-    if let Ok(boop) = scenes.get(root) {
-        println!("----{:?}, {}", boop.0, offset);
-    }
 
     for entity in children.iter_descendants(root) {
         //info!("i: {}", entity);

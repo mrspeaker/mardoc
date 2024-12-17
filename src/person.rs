@@ -28,6 +28,9 @@ pub struct SpawnBodyPart {
     pub normal: Vec3
 }
 
+#[derive(Component)]
+pub struct GltfBodyPart;
+
 #[derive(Debug, Event)]
 pub struct HitBodyPart {
     pub item_id: ItemId,
@@ -102,6 +105,7 @@ fn spawn_person(
         parent
             .spawn((
                 Name::new("BodyOdy"),
+                GltfBodyPart,
                 SceneRoot(
                     asset_server
                         .load(GltfAssetLabel::Scene(0).from_asset("body.glb"))),
@@ -112,6 +116,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("Arm1"),
+                        GltfBodyPart,
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
@@ -124,6 +129,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("Arm2"),
+                        GltfBodyPart,
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset("arm.glb"))),
@@ -135,6 +141,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("head"),
+                        GltfBodyPart,
                         SceneRoot(
                             asset_server
                                 .load(GltfAssetLabel::Scene(0).from_asset(if speed < 0.3 { "head.glb" } else { "serhead.glb"}))),
@@ -144,6 +151,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("leg1"),
+                        GltfBodyPart,
                         Timey(0.9),
                         SceneRoot(
                             asset_server
@@ -157,6 +165,7 @@ fn spawn_person(
                 body_parent
                     .spawn((
                         Name::new("leg2"),
+                        GltfBodyPart,
                         Timey(9.5),
                         SceneRoot(
                             asset_server
@@ -206,6 +215,7 @@ fn spawn_bodypart(
                 .spawn((
                     Name::new("serhead"),
                     Visibility::Visible,
+                    GltfBodyPart,
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("serhead.glb"))),
@@ -363,5 +373,4 @@ fn kill_person(
             Person,
             Health(0.0)
         ));
-
 }
