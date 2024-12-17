@@ -13,7 +13,7 @@ use crate::person::{
     PersonPlugin,
     SpawnPerson,
     Jointy,
-    JointCycle
+    JointCycle, GltfBodyPart
 };
 use crate::town::TownPlugin;
 use crate::townsfolk::TownsfolkPlugin;
@@ -131,33 +131,31 @@ fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
     children: Query<&Children>,
-    scenes: Query<(Option<&Timey>, Option<&Name>), With<SceneRoot>>,
+    //body_parts: Query<(Option<&Timey>, Option<&Name>), (With<SceneRoot>, With<GltfBodyPart>)>,
+    body_parts: Query<(Option<&Timey>, Option<&Name>), With<SceneRoot>>,
     deets: Query<(&GlobalTransform, &Parent, Option<&Name>)>,
 ) {
     let root = trigger.entity();
 
     commands.entity(root).insert(GltfLoaded);
 
-    let offset: f32 = match scenes.get(root) {
-        Ok((timey, name)) => {
-            info!("Scene: {:?}", name.map_or("-",|v|v));
-            timey.map_or(0.0, |Timey(v)| *v)
-        },
-        _ => 0.0
-    };
+    if let Ok(parts) = body_parts.get(root) {
+        let (timey, nameo) = parts;
+        info!("Scene: {:?}", nameo.map_or("-",|v|v));
+        let offset: f32 = timey.map_or(0.0, |Timey(v)| *v);
 
-    for entity in children.iter_descendants(root) {
-        //info!("i: {}", entity);
-        if let Ok((transform, parent, name)) = deets.get(entity) {
-            if let Some(name) = name {
-                //info!("n: {} {:?} {:?}", name, parent, name.starts_with("Cube"));
-                if *name == Name::new("forearm") {
+        for entity in children.iter_descendants(root) {
+            info!("bodyparts i: {}", entity);
+            if let Ok((transform, parent, name)) = deets.get(entity) {
+                let name = name.map_or("-", |v|v);
+                info!("n: {} {:?}", name, parent);
+                if name == "forearm" {
                     commands.entity(entity).insert((Jointy, Timey(0.0)));
                 }
-                if *name == Name::new("shoulder") {
+                if name == "shoulder" {
                     commands.entity(entity).insert((Jointy, Timey(10.0)));
                 }
-                if *name == Name::new("hand") {
+                if name == "hand" {
                     commands.entity(entity).insert((Jointy, Timey(3.0)));
                 }
                 if name.ends_with("Mesh") {
@@ -166,20 +164,30 @@ fn tag_gltf_heirachy(
                 if name.ends_with("Floor") {
                     commands.entity(entity).insert(Terrain);
                 }
-                if *name == Name::new("HeadBone") {
+                if name == "HeadBone" {
                     commands.entity(entity).insert((JointCycle, Timey(3.0), Pickable));
                 }
-                if *name == Name::new("SerheadBone") {
+                if name == "SerheadBone" {
                     commands.entity(entity).insert((Jointy, Timey(3.0), Pickable));
                 }
 
-                if offset > 0.0 && *name == Name::new("LegLowerBone") {
+                if offset > 0.0 && name == "LegLowerBone" {
                     commands.entity(entity).insert((JointCycle, Timey(offset)));
                 }
-
-            } else {
-                 //info!("t: {:?}", transform);
             }
+
         }
+
     }
 }
+
+/*
+fn gltf_bodypart_matcher(
+    name: &str
+) {
+    match name {
+        "forearm" => (Jointy, Timey(0.0)),
+        _ if name.starts_with("Floor") => (Terrain)
+    }
+}
+*/

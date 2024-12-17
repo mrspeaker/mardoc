@@ -282,7 +282,7 @@ fn ray_cast_down(
         return;
     }
     for (_e, rmh) in hits.iter() {
-        if rmh.distance < 1.0 {
+        if rmh.distance < 1.5 {
             transform.translation.y = rmh.point.y+0.1;
         } else {
             transform.translation.y -= 0.1;
