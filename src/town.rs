@@ -26,6 +26,19 @@ fn setup(
 
     commands
         .spawn((
+            Name::new("banart"),
+            SceneRoot(
+                asset_server
+                    .load(GltfAssetLabel::Scene(0).from_asset("banart.glb"))),
+            Transform::from_xyz(10.0, -0.2, 20.0)
+                .with_rotation(Quat::from_rotation_y((-PI / 2.)))
+                .with_scale(Vec3::splat(20.0))
+        ));
+
+
+    
+    commands
+        .spawn((
             Name::new("building1"),
             SceneRoot(
                 asset_server

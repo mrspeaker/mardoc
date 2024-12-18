@@ -13,7 +13,8 @@ use crate::person::{
     PersonPlugin,
     SpawnPerson,
     Jointy,
-    JointCycle, GltfBodyPart
+    JointCycle,
+    GltfBodyPart
 };
 use crate::town::TownPlugin;
 use crate::townsfolk::TownsfolkPlugin;
@@ -118,15 +119,6 @@ fn setup_scene(
     }
 }
 
-fn boop(
-    mut commands: Commands,
-    mut meshy: Query<Entity, Added<Mesh3d>>
-){
-    for e in meshy.iter_mut() {
-        commands.entity(e).insert(Pickable);
-    }
-}
-
 fn tag_gltf_heirachy(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
@@ -148,7 +140,7 @@ fn tag_gltf_heirachy(
             info!("bodyparts i: {}", entity);
             if let Ok((transform, parent, name)) = deets.get(entity) {
                 let name = name.map_or("-", |v|v);
-                info!("n: {} {:?}", name, parent);
+                //info!("n: {} {:?}", name, parent);
                 if name == "forearm" {
                     commands.entity(entity).insert((Jointy, Timey(0.0)));
                 }

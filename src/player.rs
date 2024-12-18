@@ -1,10 +1,11 @@
+use bevy::math::VectorSpace;
 use bevy::prelude::*;
 use bevy::input::mouse::AccumulatedMouseMotion;
 use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
 
 use crate::inventory::{Inventory,ItemStack,ItemId};
-use crate::person::{Pickable, SpawnPerson, SpawnBodyPart, HitBodyPart};
+use crate::person::{HitBodyPart, Person, Pickable, SpawnBodyPart, SpawnPerson};
 use crate::hotbar::{HotbarSelected, HotbarChangeSelected};
 use crate::terrain::Terrain;
 
@@ -330,6 +331,7 @@ fn use_tool(
     ray_target: ResMut<RaycastTarget>,
     hotbar: Query<&HotbarSelected>,
     buttons: Res<ButtonInput<MouseButton>>,
+    mut persons: Query<(Entity, &mut Transform), With<Person>>,
     inv: Query<&Inventory, With<Player>>,
     mut commands: Commands
 
@@ -376,10 +378,17 @@ fn use_tool(
             mesh
         );
     } else if tool_id == ItemId::Leg {
-        commands.trigger_targets(
-            SpawnBodyPart { pos: mesh_point, item_id: ItemId::Leg, normal },
-            mesh
-        );
+        if let Ok((person, mut transform)) = persons.get_mut(mesh) {
+            info!("got a person...");
+            commands.entity(person).remove::<Person>();
+            transform.translation = Vec3::ZERO;
+        } else {
+            info!("no person");
+            commands.trigger_targets(
+                SpawnBodyPart { pos: mesh_point, item_id: ItemId::Leg, normal },
+                mesh
+            );
+        }
     }
 
 }
