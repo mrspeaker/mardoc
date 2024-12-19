@@ -36,6 +36,18 @@ fn setup(
         ));
 
 
+    commands
+        .spawn((
+            Name::new("roks"),
+            SceneRoot(
+                asset_server
+                    .load(GltfAssetLabel::Scene(0).from_asset("rocks.glb"))),
+            Transform::from_xyz(20.0, -0.2, 10.0)
+                .with_rotation(Quat::from_rotation_y((-PI / 2.)))
+                .with_scale(Vec3::splat(20.0))
+        ));
+
+
     
     commands
         .spawn((
