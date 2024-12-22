@@ -5,7 +5,7 @@ use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use std::f32::consts::*;
 
 use crate::inventory::{Inventory,ItemStack,ItemId};
-use crate::person::{HitBodyPart, Person, Pickable, SpawnBodyPart, SpawnPerson};
+use crate::person::{HitBodyPart, Person, Pickable, SpawnBodyPart, SpawnPerson, BodyRoot};
 use crate::hotbar::{HotbarSelected, HotbarChangeSelected};
 use crate::terrain::Terrain;
 
@@ -19,6 +19,11 @@ pub struct MainCamera;
 
 #[derive(Component)]
 pub struct ToolViz;
+
+#[derive(Debug, Event)]
+pub struct CarryStuff {
+    pub entity: Entity
+}
 
 #[derive(Resource)]
 struct RaycastTarget {
@@ -41,6 +46,7 @@ impl Plugin for PlayerPlugin {
             cursor_ray_align
         ));
         app.add_observer(switch_tool_viz);
+        app.add_observer(carry_stuff);
     }
 }
 
@@ -331,8 +337,10 @@ fn use_tool(
     ray_target: ResMut<RaycastTarget>,
     hotbar: Query<&HotbarSelected>,
     buttons: Res<ButtonInput<MouseButton>>,
-    mut persons: Query<(Entity, &mut Transform), With<Person>>,
+    mut roots: Query<(Entity, &mut Transform), With<BodyRoot>>,
     inv: Query<&Inventory, With<Player>>,
+    parent_q: Query<&Parent>,
+
     mut commands: Commands
 
 ) {
@@ -354,6 +362,8 @@ fn use_tool(
 
     let normal = ray_target.normal;
     let mesh_point = ray_target.mesh_point;
+
+    let root_ancestor = parent_q.root_ancestor(mesh);
 
     if tool_id == ItemId::Cloner {
         commands.trigger_targets(
@@ -378,10 +388,11 @@ fn use_tool(
             mesh
         );
     } else if tool_id == ItemId::Leg {
-        if let Ok((person, mut transform)) = persons.get_mut(mesh) {
-            info!("got a person...");
-            commands.entity(person).remove::<Person>();
-            transform.translation = Vec3::ZERO;
+        if let Ok((body_root, mut transform)) = roots.get_mut(root_ancestor) { //)) let Ok((person, mut transform)) = persons.get_mut(mesh) {
+            info!("got a body_root...");
+            //commands.entity(body_root).remove::<Person>();
+            //transform.translation = Vec3::ZERO;
+            commands.trigger( CarryStuff { entity: body_root });
         } else {
             info!("no person");
             commands.trigger_targets(
@@ -391,4 +402,23 @@ fn use_tool(
         }
     }
 
+}
+
+
+fn carry_stuff(
+    trigger: Trigger<CarryStuff>,
+    mut commands: Commands<'_, '_>,
+    player_query: Query<Entity, With<Player>>,
+    mut roots: Query<&mut Transform, With<BodyRoot>>,
+) {
+    let thing_to_carry = trigger.event().entity;
+    let Ok(mut thing) = roots.get_mut(thing_to_carry) else {
+        info!("no thing");
+        return;
+    };
+
+    info!("{:?}, carry", thing);
+    let player  = player_query.single();
+    thing.translation = Vec3::new(0.0, 1.5, -3.0);
+    commands.entity(player).add_child(thing_to_carry);
 }

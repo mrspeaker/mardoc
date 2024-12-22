@@ -45,6 +45,10 @@ pub struct Knockback {
 }
 
 #[derive(Component)]
+pub struct BodyRoot;
+
+
+#[derive(Component)]
 pub struct Person;
 
 #[derive(Component)]
@@ -94,6 +98,7 @@ fn spawn_person(
             .looking_to(normal, Dir3::Y),
         Visibility::Visible,
         Person,
+        BodyRoot,
         Health(100.0),
         Bob(0.0),
         LookingForWork,
@@ -216,6 +221,7 @@ fn spawn_bodypart(
                     Name::new("serhead"),
                     Visibility::Visible,
                     GltfBodyPart,
+                    BodyRoot,
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("serhead.glb"))),
@@ -233,6 +239,7 @@ fn spawn_bodypart(
                     Name::new("leg1"),
                     Timey(0.9),
                     Visibility::Visible,
+                    BodyRoot,
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("leg.glb"))),
@@ -248,6 +255,7 @@ fn spawn_bodypart(
                     Name::new("apple"),
                     Timey(0.9),
                     Visibility::Visible,
+                    BodyRoot,
                     SceneRoot(
                         asset_server
                             .load(GltfAssetLabel::Scene(0).from_asset("plinth.glb"))),
@@ -260,6 +268,7 @@ fn spawn_bodypart(
     };
 
     if let Some(_e) = commands.get_entity(id) {
+        commands.entity(perp).remove::<BodyRoot>();
         commands.entity(id).add_child(perp);
     }
 
@@ -370,6 +379,7 @@ fn kill_person(
                     .load(GltfAssetLabel::Scene(0).from_asset("dead.glb"))),
             Transform::from_xyz(pos.x, pos.y , pos.z),
             Carryable,
+            BodyRoot,
             Person,
             Health(0.0)
         ));
