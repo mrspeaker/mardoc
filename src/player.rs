@@ -25,6 +25,9 @@ pub struct CarryStuff {
     pub entity: Entity
 }
 
+#[derive(Component)]
+struct Carrying(Option<Entity>);
+
 #[derive(Resource)]
 struct RaycastTarget {
     dir: Dir3,
@@ -111,6 +114,7 @@ fn setup(
     commands.spawn((
         Name::new("Player"),
         Player,
+        Carrying(None),
         Transform::from_xyz(0., 0., 25.0),
         Visibility::Visible,
         inv
@@ -408,17 +412,24 @@ fn use_tool(
 fn carry_stuff(
     trigger: Trigger<CarryStuff>,
     mut commands: Commands<'_, '_>,
-    player_query: Query<Entity, With<Player>>,
+    mut player_query: Query<(Entity, &mut Carrying), With<Player>>,
     mut roots: Query<&mut Transform, With<BodyRoot>>,
 ) {
+    let (player, mut carrying)  = player_query.single_mut();
+
+    if carrying.0.is_some() {
+        return;
+    }
+
     let thing_to_carry = trigger.event().entity;
     let Ok(mut thing) = roots.get_mut(thing_to_carry) else {
         info!("no thing");
         return;
     };
 
+    carrying.0 = Some(thing_to_carry);
+
     info!("{:?}, carry", thing);
-    let player  = player_query.single();
     thing.translation = Vec3::new(0.0, 1.5, -3.0);
     commands.entity(player).add_child(thing_to_carry);
 }
