@@ -22,7 +22,8 @@ pub struct ToolViz;
 
 #[derive(Debug, Event)]
 pub struct CarryStuff {
-    pub entity: Entity
+    pub entity: Entity,
+    pub point: Vec3
 }
 
 #[derive(Component)]
@@ -341,7 +342,7 @@ fn use_tool(
     ray_target: ResMut<RaycastTarget>,
     hotbar: Query<&HotbarSelected>,
     buttons: Res<ButtonInput<MouseButton>>,
-    mut roots: Query<(Entity, &mut Transform), With<BodyRoot>>,
+    roots: Query<(Entity, &mut Transform), With<BodyRoot>>,
     inv: Query<&Inventory, With<Player>>,
     parent_q: Query<&Parent>,
 
@@ -392,11 +393,11 @@ fn use_tool(
             mesh
         );
     } else if tool_id == ItemId::Leg {
-        if let Ok((body_root, mut transform)) = roots.get_mut(root_ancestor) { //)) let Ok((person, mut transform)) = persons.get_mut(mesh) {
+        if let Ok((body_root, transform)) = roots.get(root_ancestor) { //)) let Ok((person, mut transform)) = persons.get_mut(mesh) {
             info!("got a body_root...");
             //commands.entity(body_root).remove::<Person>();
             //transform.translation = Vec3::ZERO;
-            commands.trigger( CarryStuff { entity: body_root });
+            commands.trigger( CarryStuff { entity: body_root, point: transform.translation });
         } else {
             info!("no person");
             commands.trigger_targets(
@@ -417,11 +418,15 @@ fn carry_stuff(
 ) {
     let (player, mut carrying)  = player_query.single_mut();
 
+    let event = trigger.event();
+    let thing_to_carry = event.entity;
+    let pos = event.point;
+
     if carrying.0.is_some() {
+        carrying.0.translation = pos;
         return;
     }
 
-    let thing_to_carry = trigger.event().entity;
     let Ok(mut thing) = roots.get_mut(thing_to_carry) else {
         info!("no thing");
         return;
